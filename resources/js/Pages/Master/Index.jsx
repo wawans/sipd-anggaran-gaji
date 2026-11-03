@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useForm, usePage } from '@inertiajs/react';
+import { useForm, usePage, Link } from '@inertiajs/react';
 import { Kartu, Tombol, Lencana, Paginasi, SelKosong } from '../../umum/ui';
 
 function Formulir({ field, awal, aksi, metode, tombolSimpan, onSelesai }) {
@@ -64,7 +64,12 @@ export default function Index({ judul, rute, kolom, field, data }) {
             <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-bold">Master {judul}</h1>
                 {bisaKelola && !tambah && (
-                    <Tombol onClick={() => { setTambah(true); setUbah(null); }}>Tambah {judul}</Tombol>
+                    <div className="flex gap-2">
+                        {(rute === 'skpd' || rute === 'rekening') && (
+                            <Link href={`/${rute}/impor`}><Tombol varian="sekunder">Impor Excel</Tombol></Link>
+                        )}
+                        <Tombol onClick={() => { setTambah(true); setUbah(null); }}>Tambah {judul}</Tombol>
+                    </div>
                 )}
             </div>
 

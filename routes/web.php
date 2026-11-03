@@ -3,6 +3,7 @@
 use App\Http\Controllers\AnggaranController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DasborController;
+use App\Http\Controllers\ImporMasterController;
 use App\Http\Controllers\JenisKebutuhanController;
 use App\Http\Controllers\JenisKebutuhanTambahanController;
 use App\Http\Controllers\LaporanController;
@@ -37,6 +38,17 @@ Route::middleware('auth')->group(function () {
     Route::get('/rekening', [RekeningController::class, 'index'])->middleware('hak_akses:rekening.view')->name('rekening.index');
     Route::post('/rekening', [RekeningController::class, 'store'])->middleware('hak_akses:rekening.manage');
     Route::put('/rekening/{rekening}', [RekeningController::class, 'update'])->middleware('hak_akses:rekening.manage');
+
+    // Impor master SKPD & rekening dari Excel
+    Route::get('/skpd/impor', [ImporMasterController::class, 'form'])->defaults('jenis', 'skpd')->middleware('hak_akses:skpd.manage')->name('skpd.impor');
+    Route::post('/skpd/impor/pratampil', [ImporMasterController::class, 'pratampil'])->defaults('jenis', 'skpd')->middleware('hak_akses:skpd.manage');
+    Route::post('/skpd/impor/simpan', [ImporMasterController::class, 'simpan'])->defaults('jenis', 'skpd')->middleware('hak_akses:skpd.manage');
+    Route::get('/skpd/impor/template', [ImporMasterController::class, 'template'])->defaults('jenis', 'skpd')->middleware('hak_akses:skpd.manage');
+
+    Route::get('/rekening/impor', [ImporMasterController::class, 'form'])->defaults('jenis', 'rekening')->middleware('hak_akses:rekening.manage')->name('rekening.impor');
+    Route::post('/rekening/impor/pratampil', [ImporMasterController::class, 'pratampil'])->defaults('jenis', 'rekening')->middleware('hak_akses:rekening.manage');
+    Route::post('/rekening/impor/simpan', [ImporMasterController::class, 'simpan'])->defaults('jenis', 'rekening')->middleware('hak_akses:rekening.manage');
+    Route::get('/rekening/impor/template', [ImporMasterController::class, 'template'])->defaults('jenis', 'rekening')->middleware('hak_akses:rekening.manage');
 
     // Master jenis kebutuhan
     Route::get('/jenis-kebutuhan', [JenisKebutuhanController::class, 'index'])->middleware('hak_akses:jenis_kebutuhan.view')->name('jenis-kebutuhan.index');
