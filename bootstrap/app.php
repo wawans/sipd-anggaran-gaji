@@ -14,6 +14,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             \App\Http\Middleware\HandleInertiaRequests::class,
         ]);
+        $middleware->alias([
+            'hak_akses' => \App\Http\Middleware\HakAkses::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
