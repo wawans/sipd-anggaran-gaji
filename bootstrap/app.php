@@ -13,6 +13,10 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         // Percaya pada proxy (cloudflared tunnel) agar skema HTTPS & IP klien terbaca benar
         $middleware->trustProxies(at: '*');
+        // Alias middleware hak akses (spatie permission, nama Indonesia)
+        $middleware->alias([
+            'hak_akses' => \App\Http\Middleware\HakAkses::class,
+        ]);
         $middleware->web(append: [
             \App\Http\Middleware\HandleInertiaRequests::class,
         ]);
