@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Rekening;
+use App\Models\Anggaran;
+use App\Models\Realisasi;
+use App\Models\MappingTemplateKolom;
 use App\Traits\MencatatAudit;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -71,5 +74,34 @@ class RekeningController extends Controller
         $this->catatAudit('ubah', 'rekening', $rekening->id, "Rekening {$rekening->kode} - {$rekening->nama}");
 
         return back()->with('sukses', 'Rekening diperbarui.');
+    }
+
+    public function destroy(Rekening $rekening)
+    {
+        $dipakaiAnggaran = Anggaran::where('rekening_id', $rekening->id)->count();
+        $dipakaiRealisasi = Realisasi::where('rekening_id', $rekening->id)->count();
+        $dipakaiTemplate = MappingTemplateKolom::where('rekening_id', $rekening->id)->count();
+
+        if ($dipakaiAnggaran > 0 || $dipakaiRealisasi > 0 || $dipakaiTemplate > 0) {
+            $rincian = [];
+            if ($dipakaiAnggaran > 0) {
+                $rincian[] = $dipakaiAnggaran.' baris anggaran';
+            }
+            if ($dipakaiRealisasi > 0) {
+                $rincian[] = $dipakaiRealisasi.' baris realisasi';
+            }
+            if ($dipakaiTemplate > 0) {
+                $rincian[] = $dipakaiTemplate.' template mapping';
+            }
+
+            return back()->with('galat', 'Tidak dapat menghapus rekening '.$rekening->kode.' - '.$rekening->nama.' karena masih dipakai di '.implode(', ', $rincian).'.');
+        }
+
+        $keterangan = 'Rekening '.$rekening->kode.' - '.$rekening->nama;
+        $id = $rekening->id;
+        $rekening->delete();
+        $this->catatAudit('hapus', 'rekening', $id, $keterangan);
+
+        return back()->with('sukses', 'Rekening dihapus.');
     }
 }

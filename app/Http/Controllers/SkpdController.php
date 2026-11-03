@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Skpd;
+use App\Models\Anggaran;
+use App\Models\Realisasi;
 use App\Traits\MencatatAudit;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -63,5 +65,30 @@ class SkpdController extends Controller
         $this->catatAudit('ubah', 'skpd', $skpd->id, "SKPD {$skpd->kode} - {$skpd->nama}");
 
         return back()->with('sukses', 'SKPD diperbarui.');
+    }
+
+    public function destroy(Skpd $skpd)
+    {
+        $dipakaiAnggaran = Anggaran::where('skpd_id', $skpd->id)->count();
+        $dipakaiRealisasi = Realisasi::where('skpd_id', $skpd->id)->count();
+
+        if ($dipakaiAnggaran > 0 || $dipakaiRealisasi > 0) {
+            $rincian = [];
+            if ($dipakaiAnggaran > 0) {
+                $rincian[] = $dipakaiAnggaran.' baris anggaran';
+            }
+            if ($dipakaiRealisasi > 0) {
+                $rincian[] = $dipakaiRealisasi.' baris realisasi';
+            }
+
+            return back()->with('galat', 'Tidak dapat menghapus SKPD '.$skpd->kode.' - '.$skpd->nama.' karena masih dipakai di '.implode(' dan ', $rincian).'.');
+        }
+
+        $keterangan = 'SKPD '.$skpd->kode.' - '.$skpd->nama;
+        $id = $skpd->id;
+        $skpd->delete();
+        $this->catatAudit('hapus', 'skpd', $id, $keterangan);
+
+        return back()->with('sukses', 'SKPD dihapus.');
     }
 }

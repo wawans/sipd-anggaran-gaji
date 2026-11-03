@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useForm, usePage, Link } from '@inertiajs/react';
+import { useForm, usePage, Link, router } from '@inertiajs/react';
 import { Kartu, Tombol, Lencana, Paginasi, SelKosong } from '../../umum/ui';
 
 function Formulir({ field, awal, aksi, metode, tombolSimpan, onSelesai }) {
@@ -57,6 +57,13 @@ export default function Index({ judul, rute, kolom, field, data }) {
             return baris[k.kunci] ? <Lencana tipe="hijau">Aktif</Lencana> : <Lencana tipe="abu">Nonaktif</Lencana>;
         }
         return baris[k.kunci];
+    };
+
+    const hapus = (baris) => {
+        const nama = baris.kode ? `${baris.kode} - ${baris.nama}` : baris.nama;
+        if (confirm(`Hapus ${judul} "${nama}"? Tindakan ini tidak bisa dibatalkan.`)) {
+            router.delete(`/${rute}/${baris.id}`);
+        }
     };
 
     return (
@@ -124,12 +131,20 @@ export default function Index({ judul, rute, kolom, field, data }) {
                                     ))}
                                     {bisaKelola && (
                                         <td className="py-2">
-                                            <button
-                                                onClick={() => { setUbah(baris); setTambah(false); window.scrollTo(0, 0); }}
-                                                className="text-blue-600 hover:underline text-sm"
-                                            >
-                                                Ubah
-                                            </button>
+                                            <div className="flex gap-3">
+                                                <button
+                                                    onClick={() => { setUbah(baris); setTambah(false); window.scrollTo(0, 0); }}
+                                                    className="text-blue-600 hover:underline text-sm"
+                                                >
+                                                    Ubah
+                                                </button>
+                                                <button
+                                                    onClick={() => hapus(baris)}
+                                                    className="text-red-600 hover:underline text-sm"
+                                                >
+                                                    Hapus
+                                                </button>
+                                            </div>
                                         </td>
                                     )}
                                 </tr>

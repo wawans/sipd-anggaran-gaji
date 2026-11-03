@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\JenisKebutuhan;
+use App\Models\AnggaranKebutuhan;
 use App\Traits\MencatatAudit;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -63,5 +64,21 @@ class JenisKebutuhanController extends Controller
         $this->catatAudit('ubah', 'jenis_kebutuhan', $jenisKebutuhan->id, "Jenis kebutuhan {$jenisKebutuhan->nama}");
 
         return back()->with('sukses', 'Jenis kebutuhan diperbarui.');
+    }
+
+    public function destroy(JenisKebutuhan $jenisKebutuhan)
+    {
+        $dipakai = AnggaranKebutuhan::where('jenis_kebutuhan_id', $jenisKebutuhan->id)->count();
+
+        if ($dipakai > 0) {
+            return back()->with('galat', 'Tidak dapat menghapus jenis kebutuhan '.$jenisKebutuhan->nama.' karena masih dipakai di '.$dipakai.' rincian anggaran.');
+        }
+
+        $keterangan = 'Jenis kebutuhan '.$jenisKebutuhan->nama;
+        $id = $jenisKebutuhan->id;
+        $jenisKebutuhan->delete();
+        $this->catatAudit('hapus', 'jenis_kebutuhan', $id, $keterangan);
+
+        return back()->with('sukses', 'Jenis kebutuhan dihapus.');
     }
 }
