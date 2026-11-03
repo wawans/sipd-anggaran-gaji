@@ -11,11 +11,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Percaya pada proxy (cloudflared tunnel) agar skema HTTPS & IP klien terbaca benar
+        $middleware->trustProxies(at: '*');
         $middleware->web(append: [
             \App\Http\Middleware\HandleInertiaRequests::class,
-        ]);
-        $middleware->alias([
-            'hak_akses' => \App\Http\Middleware\HakAkses::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
