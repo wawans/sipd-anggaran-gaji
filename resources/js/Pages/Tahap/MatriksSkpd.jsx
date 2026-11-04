@@ -1,6 +1,6 @@
 import { useState, Fragment } from 'react';
 import { Link, useForm, router } from '@inertiajs/react';
-import { Kartu, Tombol, Lencana, rupiah, lencanaStatus, SelKosong } from '../../umum/ui';
+import { Kartu, Tombol, Lencana, rupiah, lencanaStatus, SelKosong, PilihCari } from '../../umum/ui';
 
 function FormulirBaris({ baris, jenis_kebutuhan, jenis_tambahan, onSelesai }) {
     const awal = {
@@ -94,9 +94,9 @@ function FormulirBaris({ baris, jenis_kebutuhan, jenis_tambahan, onSelesai }) {
     );
 }
 
-function FormulirTambah({ tahapId, skpd, rekening, onSelesai }) {
+function FormulirTambah({ tahapId, skpd, rekening, volumeBawaan, volumeKeterangan, onSelesai }) {
     const { data, setData, post, processing, errors } = useForm({
-        skpd_id: skpd.id, rekening_id: '', nilai: 0, volume: 12,
+        skpd_id: skpd.id, rekening_id: '', nilai: 0, volume: volumeBawaan,
     });
 
     const kirim = (e) => {
@@ -114,10 +114,12 @@ function FormulirTambah({ tahapId, skpd, rekening, onSelesai }) {
             </div>
             <div>
                 <label className="block text-xs font-medium mb-1">Rekening</label>
-                <select value={data.rekening_id} onChange={(e) => setData('rekening_id', e.target.value)} className={input}>
-                    <option value="">— pilih —</option>
-                    {rekening.map((r) => <option key={r.id} value={r.id}>{r.kode} - {r.nama}</option>)}
-                </select>
+                <PilihCari
+                    opsi={rekening.map((r) => ({ id: r.id, label: `${r.kode} - ${r.nama}` }))}
+                    nilai={data.rekening_id}
+                    onPilih={(id) => setData('rekening_id', id)}
+                    placeholder="Ketik kode/nama rekening…"
+                />
                 {errors.rekening_id && <div className="text-red-600 text-xs mt-1">{errors.rekening_id}</div>}
             </div>
             <div>
@@ -128,6 +130,7 @@ function FormulirTambah({ tahapId, skpd, rekening, onSelesai }) {
                 <div className="flex-1">
                     <label className="block text-xs font-medium mb-1">Volume</label>
                     <input type="number" min="0" step="0.01" value={data.volume} onChange={(e) => setData('volume', e.target.value)} className={input} />
+                    {volumeKeterangan && <p className="text-xs text-slate-500 mt-1">{volumeKeterangan}</p>}
                 </div>
                 <Tombol disabled={processing}>Tambah</Tombol>
                 <Tombol varian="sekunder" type="button" onClick={onSelesai}>Batal</Tombol>
@@ -136,7 +139,7 @@ function FormulirTambah({ tahapId, skpd, rekening, onSelesai }) {
     );
 }
 
-export default function MatriksSkpd({ tahap, skpd, baris, total_skpd, rekening, jenis_kebutuhan, jenis_tambahan, bisa_ubah }) {
+export default function MatriksSkpd({ tahap, skpd, baris, total_skpd, rekening, jenis_kebutuhan, jenis_tambahan, bisa_ubah, volume_bawaan, volume_keterangan }) {
     const [tambah, setTambah] = useState(false);
     const [ubahId, setUbahId] = useState(null);
     const [cari, setCari] = useState('');
@@ -174,7 +177,7 @@ export default function MatriksSkpd({ tahap, skpd, baris, total_skpd, rekening, 
 
             {bisa_ubah && tambah && (
                 <Kartu judul="Tambah Baris Anggaran">
-                    <FormulirTambah tahapId={tahap.id} skpd={skpd} rekening={rekening} onSelesai={() => setTambah(false)} />
+                    <FormulirTambah tahapId={tahap.id} skpd={skpd} rekening={rekening} volumeBawaan={volume_bawaan} volumeKeterangan={volume_keterangan} onSelesai={() => setTambah(false)} />
                 </Kartu>
             )}
 

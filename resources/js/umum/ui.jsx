@@ -1,4 +1,5 @@
 import { Link } from '@inertiajs/react';
+import { useState, useRef, useEffect } from 'react';
 
 /** Format angka gaya Indonesia: 1.234.567,89 */
 export function rupiah(nilai) {
@@ -100,5 +101,75 @@ export function SelKosong({ colspan, teks = 'Belum ada data.' }) {
                 {teks}
             </td>
         </tr>
+    );
+}
+
+/**
+ * Combobox sederhana: ketik untuk mencari, klik untuk memilih.
+ * opsi: [{ id, label }], nilai: id yang terpilih, onPilih(id).
+ */
+export function PilihCari({ opsi = [], nilai, onPilih, placeholder = 'Ketik untuk mencari…' }) {
+    const [buka, setBuka] = useState(false);
+    const [cari, setCari] = useState('');
+    const bungkus = useRef(null);
+    const terpilih = opsi.find((o) => String(o.id) === String(nilai));
+
+    useEffect(() => {
+        const tutup = (e) => {
+            if (bungkus.current && !bungkus.current.contains(e.target)) setBuka(false);
+        };
+        document.addEventListener('mousedown', tutup);
+        return () => document.removeEventListener('mousedown', tutup);
+    }, []);
+
+    const tampil = cari
+        ? opsi.filter((o) => o.label.toLowerCase().includes(cari.toLowerCase()))
+        : opsi;
+
+    const bukaPencarian = () => { setCari(''); setBuka(true); };
+    const pilih = (id) => { onPilih(id); setCari(''); setBuka(false); };
+
+    return (
+        <div ref={bungkus} className="relative">
+            <div className="flex items-center gap-1">
+                <input
+                    type="text"
+                    autoComplete="off"
+                    placeholder={placeholder}
+                    value={buka ? cari : (terpilih ? terpilih.label : '')}
+                    onChange={(e) => { setCari(e.target.value); setBuka(true); }}
+                    onFocus={bukaPencarian}
+                    className="w-full border rounded px-3 py-2 text-sm"
+                />
+                {nilai !== '' && nilai != null && (
+                    <button
+                        type="button"
+                        title="Bersihkan pilihan"
+                        onClick={() => { onPilih(''); setCari(''); }}
+                        className="shrink-0 px-2 text-slate-400 hover:text-slate-700 text-lg leading-none"
+                    >
+                        ×
+                    </button>
+                )}
+            </div>
+            {buka && (
+                <ul className="absolute z-30 mt-1 w-full max-h-60 overflow-auto bg-white border rounded-md shadow-lg text-sm">
+                    {tampil.length === 0 && (
+                        <li className="px-3 py-2 text-slate-500">Tidak ada pilihan yang cocok.</li>
+                    )}
+                    {tampil.map((o) => (
+                        <li key={o.id}>
+                            <button
+                                type="button"
+                                onClick={() => pilih(o.id)}
+                                className={`w-full text-left px-3 py-2 hover:bg-blue-50 ${String(o.id) === String(nilai) ? 'bg-blue-100 font-medium' : ''}`}
+                            >
+                                {o.label}
+                            </button>
+                        </li>
+                    ))}
+                </ul>
+            )}
+        </div>
     );
 }

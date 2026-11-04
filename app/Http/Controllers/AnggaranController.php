@@ -93,6 +93,8 @@ class AnggaranController extends Controller
             $qRek->whereNotIn('id', $sudahAda);
         }
 
+        [$volumeBawaan, $volumeKeterangan] = $this->hitungVolumeBawaan($tahap);
+
         $pengguna = auth()->user();
 
         return Inertia::render('Tahap/MatriksSkpd', [
@@ -104,7 +106,31 @@ class AnggaranController extends Controller
             'jenis_kebutuhan' => JenisKebutuhan::where('aktif', true)->orderBy('urutan')->get(['id', 'nama']),
             'jenis_tambahan' => JenisKebutuhanTambahan::where('aktif', true)->orderBy('urutan')->get(['id', 'nama']),
             'bisa_ubah' => $pengguna->punyaHakAkses('anggaran.edit') && !$tahap->terkunci(),
+            'volume_bawaan' => $volumeBawaan,
+            'volume_keterangan' => $volumeKeterangan,
         ]);
+    }
+
+    /**
+     * Volume bawaan form tambah baris: 14 bila tahap tahun depan (N+1),
+     * selain itu jumlah bulan inklusif tgl_mulai s.d. tgl_selesai.
+     * Kembalikan [volume, keterangan].
+     */
+    protected function hitungVolumeBawaan(Tahap $tahap): array
+    {
+        $tahunBerjalan = (int) now()->year;
+        if ((int) $tahap->tahun === $tahunBerjalan + 1) {
+            return [14, 'Bawaan: 14 (tahap tahun depan)'];
+        }
+        $mulai = $tahap->tgl_mulai;
+        $selesai = $tahap->tgl_selesai;
+        if ($mulai && $selesai) {
+            $jmlBulan = ($selesai->year - $mulai->year) * 12 + ($selesai->month - $mulai->month) + 1;
+            $jmlBulan = max($jmlBulan, 0);
+            $namaBulan = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+            return [$jmlBulan, "Bawaan: {$jmlBulan} bulan ({$namaBulan[$mulai->month - 1]}–{$namaBulan[$selesai->month - 1]} {$selesai->year})"];
+        }
+        return [12, 'Bawaan: 12'];
     }
 
     protected function formatBaris(Anggaran $a, $h, Skpd $skpd): array
