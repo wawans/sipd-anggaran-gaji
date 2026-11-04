@@ -27,10 +27,12 @@ class PenggunaController extends Controller
         $data = $request->validate([
             'nama' => 'required|string|max:200',
             'username' => 'required|string|max:50|unique:pengguna,username',
-            'kata_sandi' => 'required|string|min:6',
+            'kata_sandi' => 'required|string|min:6|confirmed',
             'aktif' => 'boolean',
             'peran' => 'required|array|min:1',
             'peran.*' => 'exists:peran,id',
+        ], [
+            'kata_sandi.confirmed' => 'Konfirmasi kata sandi tidak sama.',
         ]);
 
         $pengguna = Pengguna::create([
@@ -51,10 +53,12 @@ class PenggunaController extends Controller
         $data = $request->validate([
             'nama' => 'required|string|max:200',
             'username' => 'required|string|max:50|unique:pengguna,username,'.$pengguna->id,
-            'kata_sandi' => 'nullable|string|min:6',
+            'kata_sandi' => 'nullable|string|min:6|confirmed',
             'aktif' => 'boolean',
             'peran' => 'required|array|min:1',
             'peran.*' => 'exists:peran,id',
+        ], [
+            'kata_sandi.confirmed' => 'Konfirmasi kata sandi tidak sama.',
         ]);
 
         if ($pengguna->id === auth()->id() && !($data['aktif'] ?? true)) {
