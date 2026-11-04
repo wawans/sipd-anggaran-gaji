@@ -35,7 +35,8 @@ class ImporMasterController extends Controller
                 'judul' => 'Rekening',
                 'model' => Rekening::class,
                 'tabel' => 'rekening',
-                'contoh' => [['1.1', 'Gaji Pokok'], ['1.2', 'Tunjangan Jabatan']],
+                'contoh' => [['1', 'Belanja Pegawai', ''], ['1.1', 'Gaji Pokok', '1'], ['1.1.1', 'Gaji Pokok PNS', '1.1']],
+                'kepala' => ['Kode', 'Nama', 'Kode Induk'],
             ],
         ];
 
@@ -99,6 +100,7 @@ class ImporMasterController extends Controller
             'token' => 'required|string',
             'kolom_kode' => 'required|integer|min:0',
             'kolom_nama' => 'required|integer|min:0|different:kolom_kode',
+            'kolom_induk' => 'nullable|integer|min:0|different:kolom_kode|different:kolom_nama',
         ]);
 
         $paket = Cache::get('impor-master:'.$data['token']);
@@ -128,18 +130,47 @@ class ImporMasterController extends Controller
                     continue;
                 }
 
+                // Resolusi Kode Induk (khusus rekening, kolom opsional)
+                $parentId = null;
+                if ($jenis === 'rekening' && isset($data['kolom_induk']) && $data['kolom_induk'] !== null) {
+                    $kodeInduk = trim((string) ($row[$data['kolom_induk']] ?? ''));
+                    if ($kodeInduk !== '') {
+                        if ($kodeInduk === $kode) {
+                            $dilewati++; // induk = diri sendiri
+
+                            continue;
+                        }
+                        $induk = Rekening::where('kode', $kodeInduk)->first();
+                        if (!$induk) {
+                            $dilewati++; // kode induk tak dikenal
+
+                            continue;
+                        }
+                        $parentId = $induk->id;
+                    }
+                }
+
                 $ada = $model::where('kode', $kode)->first();
                 if ($ada) {
+                    $berubah = false;
                     if ($ada->nama !== $nama) {
                         $ada->nama = $nama;
+                        $berubah = true;
+                    }
+                    if ($jenis === 'rekening' && isset($data['kolom_induk']) && $data['kolom_induk'] !== null
+                        && (int) ($ada->parent_rekening_id ?? 0) !== (int) ($parentId ?? 0)
+                        && !$this->membentukSiklus($ada->id, $parentId)) {
+                        $ada->parent_rekening_id = $parentId;
+                        $berubah = true;
+                    }
+                    if ($berubah) {
                         $ada->save();
                     }
                     $diperbarui++;
                 } else {
                     $atribut = ['kode' => $kode, 'nama' => $nama];
                     if ($jenis === 'rekening') {
-                        // Kelompok wajib diisi (NOT NULL): ambil dari bagian kode sebelum titik
-                        $atribut['kelompok'] = Str::before($kode, '.') ?: $kode;
+                        $atribut['parent_rekening_id'] = $parentId;
                         $atribut['urutan'] = 0;
                     }
                     $model::create($atribut);
@@ -165,8 +196,23 @@ class ImporMasterController extends Controller
         $cfg = $this->konfigurasi($jenis);
 
         return Excel::download(
-            new TemplateMasterExport($cfg['judul'], $cfg['contoh']),
+            new TemplateMasterExport($cfg['judul'], $cfg['contoh'], $cfg['kepala'] ?? ['Kode', 'Nama']),
             'template-'.$jenis.'.xlsx'
         );
+    }
+
+    /** true bila parentId adalah keturunan dari rekeningId (akan membentuk siklus). */
+    private function membentukSiklus(int $rekeningId, $parentId): bool
+    {
+        $cursor = $parentId ? (int) $parentId : 0;
+        while ($cursor) {
+            if ($cursor === $rekeningId) {
+                return true;
+            }
+            $cursor = Rekening::where('id', $cursor)->value('parent_rekening_id');
+            $cursor = $cursor ? (int) $cursor : 0;
+        }
+
+        return false;
     }
 }

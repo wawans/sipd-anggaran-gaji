@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useForm, usePage, Link, router } from '@inertiajs/react';
-import { Kartu, Tombol, Lencana, Paginasi, SelKosong } from '../../umum/ui';
+import { Kartu, Tombol, Lencana, Paginasi, SelKosong, PilihCari } from '../../umum/ui';
 
-function Formulir({ field, awal, aksi, metode, tombolSimpan, onSelesai }) {
+function Formulir({ field, awal, aksi, metode, tombolSimpan, onSelesai, opsiInduk = [] }) {
     const { data, setData, post, put, processing, errors } = useForm(awal);
 
     const kirim = (e) => {
@@ -26,6 +26,13 @@ function Formulir({ field, awal, aksi, metode, tombolSimpan, onSelesai }) {
                             onChange={(e) => setData(f.nama, e.target.checked)}
                             className="h-4 w-4"
                         />
+                    ) : f.tipe === 'induk' ? (
+                        <PilihCari
+                            opsi={opsiInduk}
+                            nilai={data[f.nama] ?? ''}
+                            onPilih={(id) => setData(f.nama, id === '' ? null : id)}
+                            placeholder="Ketik untuk mencari induk... (kosong = top-level)"
+                        />
                     ) : (
                         <input
                             type={f.tipe === 'angka' ? 'number' : 'text'}
@@ -42,13 +49,35 @@ function Formulir({ field, awal, aksi, metode, tombolSimpan, onSelesai }) {
     );
 }
 
-export default function Index({ judul, rute, kolom, field, data }) {
+export default function Index({ judul, rute, kolom, field, data, semua_rekening = [] }) {
     const { auth } = usePage().props;
     const kelolaHak = { skpd: 'skpd.manage', rekening: 'rekening.manage', 'jenis-kebutuhan': 'jenis_kebutuhan.manage', 'jenis-kebutuhan-tambahan': 'kebutuhan_tambahan.manage' }[rute];
     const bisaKelola = (auth.hak_akses || []).includes(kelolaHak);
 
     const [tambah, setTambah] = useState(false);
     const [ubah, setUbah] = useState(null);
+
+    // Kandidat induk: semua rekening kecuali diri sendiri & keturunannya (cegah siklus)
+    const kandidatInduk = (kecuali) => {
+        const terlarang = new Set();
+        if (kecuali) {
+            terlarang.add(kecuali.id);
+            const peta = new Map(semua_rekening.map((r) => [r.id, r.parent_rekening_id]));
+            let berubah = true;
+            while (berubah) {
+                berubah = false;
+                for (const [id, pid] of peta) {
+                    if (pid && terlarang.has(pid) && !terlarang.has(id)) {
+                        terlarang.add(id);
+                        berubah = true;
+                    }
+                }
+            }
+        }
+        return semua_rekening
+            .filter((r) => !terlarang.has(r.id))
+            .map((r) => ({ id: r.id, label: r.kode + ' \u2014 ' + r.nama }));
+    };
 
     const awalKosong = Object.fromEntries(field.map((f) => [f.nama, f.tipe === 'cek' ? true : f.tipe === 'angka' ? 0 : '']));
 
@@ -89,6 +118,7 @@ export default function Index({ judul, rute, kolom, field, data }) {
                         metode="post"
                         tombolSimpan="Simpan"
                         onSelesai={() => setTambah(false)}
+                        opsiInduk={kandidatInduk(null)}
                     />
                     <button onClick={() => setTambah(false)} className="text-sm text-slate-500 hover:underline mt-3">
                         Batal
@@ -105,6 +135,7 @@ export default function Index({ judul, rute, kolom, field, data }) {
                         metode="put"
                         tombolSimpan="Perbarui"
                         onSelesai={() => setUbah(null)}
+                        opsiInduk={kandidatInduk(ubah)}
                     />
                     <button onClick={() => setUbah(null)} className="text-sm text-slate-500 hover:underline mt-3">
                         Batal

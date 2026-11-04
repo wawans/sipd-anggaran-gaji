@@ -69,16 +69,19 @@ class LaporanController extends Controller
                 'selisih' => (float) $r->total_anggaran - (float) $r->total_realisasi,
             ])->all();
 
+        // Rollup hierarki: tiap rekening induk mencakup nilainya sendiri + seluruh keturunannya
+        // (via v_rekening_leluhur); rekening tanpa anak berperilaku seperti sebelumnya.
         $perRekening = DB::table('v_anggaran_baris as v')
-            ->join('rekening as r2', 'r2.id', '=', 'v.rekening_id')
+            ->join('v_rekening_leluhur as h', 'h.rekening_id', '=', 'v.rekening_id')
+            ->join('rekening as r2', 'r2.id', '=', 'h.leluhur_id')
             ->leftJoin('v_realisasi_tahap as r', function ($j) {
                 $j->on('r.tahap_id', '=', 'v.tahap_id')
                     ->on('r.skpd_id', '=', 'v.skpd_id')
                     ->on('r.rekening_id', '=', 'v.rekening_id');
             })
             ->where('v.tahap_id', $tahap->id)
-            ->groupBy('r2.id', 'r2.kode', 'r2.nama', 'r2.urutan')
-            ->select('r2.kode', 'r2.nama')
+            ->groupBy('r2.id', 'r2.kode', 'r2.nama', 'r2.urutan', 'r2.tingkat')
+            ->select('r2.kode', 'r2.nama', 'r2.tingkat')
             ->selectRaw('SUM(v.total_pagu) as total_anggaran')
             ->selectRaw('COALESCE(SUM(r.total_realisasi), 0) as total_realisasi')
             ->orderBy('r2.urutan')->orderBy('r2.kode')

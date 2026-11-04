@@ -5,6 +5,7 @@ import { Kartu, Tombol } from '../../umum/ui';
 export default function Pratampil({ jenis, judul, token, berkas, header, contoh, jml_baris }) {
     const [kolomKode, setKolomKode] = useState('');
     const [kolomNama, setKolomNama] = useState('');
+    const [kolomInduk, setKolomInduk] = useState('');
 
     const input = 'w-full border rounded px-3 py-2 text-sm';
 
@@ -17,12 +18,20 @@ export default function Pratampil({ jenis, judul, token, berkas, header, contoh,
             alert('Kolom Kode dan kolom Nama harus berbeda.');
             return;
         }
+        if (kolomInduk !== '' && (kolomInduk === kolomKode || kolomInduk === kolomNama)) {
+            alert('Kolom Kode Induk harus berbeda dari kolom Kode dan kolom Nama.');
+            return;
+        }
         if (confirm(`Simpan impor ${judul}: ${jml_baris} baris dari ${berkas}?`)) {
-            router.post(`/${jenis}/impor/simpan`, {
+            const muatan = {
                 token,
                 kolom_kode: parseInt(kolomKode, 10),
                 kolom_nama: parseInt(kolomNama, 10),
-            });
+            };
+            if (jenis === 'rekening' && kolomInduk !== '') {
+                muatan.kolom_induk = parseInt(kolomInduk, 10);
+            }
+            router.post(`/${jenis}/impor/simpan`, muatan);
         }
     };
 
@@ -87,8 +96,20 @@ export default function Pratampil({ jenis, judul, token, berkas, header, contoh,
                         </select>
                     </div>
                 </div>
+                {jenis === 'rekening' && (
+                    <div>
+                        <label className="block text-sm font-medium mb-1">Kolom Kode Induk <span className="text-slate-400">(opsional)</span></label>
+                        <select value={kolomInduk} onChange={(e) => setKolomInduk(e.target.value)} className={input}>
+                            <option value="">— Tanpa kolom induk (semua top-level) —</option>
+                            {header.map((h, i) => (
+                                <option key={i} value={i}>Kolom {i + 1}: {h || '(kosong)'}</option>
+                            ))}
+                        </select>
+                    </div>
+                )}
                 <p className="text-xs text-slate-500 mt-3">
                     Kode maksimal 30 karakter. Baris dengan kode kosong dilewati; kode yang sudah ada akan diperbarui namanya (upsert).
+                    {jenis === 'rekening' && ' Baris dengan kode induk tak dikenal atau induk = diri sendiri dilewati.'}
                 </p>
             </Kartu>
 

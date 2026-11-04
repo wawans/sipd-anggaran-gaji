@@ -44,7 +44,7 @@ export default function Impor({ jenis, judul }) {
                 Baris pertama berkas dianggap judul kolom. Pada langkah pratampil Anda memetakan kolom Kode dan kolom Nama.
                 Baris dengan kode kosong, kode lebih dari 30 karakter, atau nama kosong akan dilewati;
                 kode yang sudah ada akan diperbarui namanya.
-                {jenis === 'rekening' && ' Untuk rekening baru, kelompok diisi otomatis dari bagian kode sebelum titik (mis. 1.1 → kelompok 1).'}
+                {jenis === 'rekening' && ' Template memiliki kolom Kode Induk (opsional): bila diisi dengan kode yang dikenal, rekening menjadi sub-rekening dari induk tersebut; bila kosong menjadi rekening top-level. Baris dengan kode induk tak dikenal akan dilewati.'}
             </p>
         </div>
     );

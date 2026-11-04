@@ -7,12 +7,13 @@ use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithTitle;
 
-/** Template .xlsx untuk impor master (SKPD / Rekening): header Kode + Nama + 2 baris contoh. */
+/** Template .xlsx untuk impor master (SKPD / Rekening). */
 class TemplateMasterExport implements FromCollection, WithHeadings, WithTitle
 {
     public function __construct(
         private string $judul,
         private array $contoh,
+        private array $kepala = ['Kode', 'Nama'],
     ) {}
 
     public function collection(): Collection
@@ -22,7 +23,7 @@ class TemplateMasterExport implements FromCollection, WithHeadings, WithTitle
 
     public function headings(): array
     {
-        return ['Kode', 'Nama'];
+        return $this->kepala;
     }
 
     public function title(): string
