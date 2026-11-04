@@ -52,6 +52,9 @@ class AnggaranController extends Controller
                     'nilai' => (float) $h->nilai,
                     'volume' => (float) $h->volume,
                     'volume_nol' => ((float) $h->volume) == 0,
+                    'acress_type' => $h->acress_type,
+                    'acress' => (float) $h->acress,
+                    'subtotal' => (float) $h->subtotal,
                     'total_pagu' => (float) $h->total_pagu,
                 ])->values(),
             ];
@@ -143,11 +146,14 @@ class AnggaranController extends Controller
             'rekening_nama' => $a->rekening->nama,
             'nilai' => (float) $a->nilai,
             'volume' => (float) $a->volume,
+            'acress_type' => $a->acress_type,
+            'acress' => (float) $a->acress,
             'kebutuhan' => $a->kebutuhan->mapWithKeys(fn ($k) => [$k->jenis_kebutuhan_id => (float) $k->nominal]),
             'tambahan' => $a->kebutuhanTambahan->mapWithKeys(fn ($k) => [$k->jenis_kebutuhan_tambahan_id => (float) $k->nominal]),
             'kebutuhan_bulan' => (float) ($h->kebutuhan_bulan ?? 0),
             'total_kebutuhan' => (float) ($h->total_kebutuhan ?? 0),
             'total_kebutuhan_tambahan' => (float) ($h->total_kebutuhan_tambahan ?? 0),
+            'subtotal' => (float) ($h->subtotal ?? 0),
             'total_pagu' => (float) ($h->total_pagu ?? 0),
             'volume_nol' => ((float) $a->volume) == 0,
         ];
@@ -164,6 +170,8 @@ class AnggaranController extends Controller
             'rekening_id' => 'required|exists:rekening,id',
             'nilai' => 'required|numeric|min:0',
             'volume' => 'required|numeric|min:0',
+            'acress_type' => 'required|in:nominal,persen',
+            'acress' => 'required|numeric|min:0',
         ]);
 
         $ada = Anggaran::where('tahap_id', $tahap->id)
@@ -191,6 +199,8 @@ class AnggaranController extends Controller
         $data = $request->validate([
             'nilai' => 'required|numeric|min:0',
             'volume' => 'required|numeric|min:0',
+            'acress_type' => 'required|in:nominal,persen',
+            'acress' => 'required|numeric|min:0',
             'kebutuhan' => 'nullable|array',
             'kebutuhan.*.jenis_kebutuhan_id' => 'required|exists:jenis_kebutuhan,id',
             'kebutuhan.*.nominal' => 'required|numeric|min:0',
@@ -199,7 +209,12 @@ class AnggaranController extends Controller
             'tambahan.*.nominal' => 'required|numeric|min:0',
         ]);
 
-        $anggaran->update(['nilai' => $data['nilai'], 'volume' => $data['volume']]);
+        $anggaran->update([
+            'nilai' => $data['nilai'],
+            'volume' => $data['volume'],
+            'acress_type' => $data['acress_type'],
+            'acress' => $data['acress'],
+        ]);
         $this->simpanRincian($anggaran, $request);
         $this->catatAudit('ubah', 'anggaran', $anggaran->id, "Baris anggaran #{$anggaran->id} tahap {$anggaran->tahap->nama}");
 
@@ -263,6 +278,8 @@ class AnggaranController extends Controller
                     'rekening_id' => $src->rekening_id,
                     'nilai' => $src->nilai,
                     'volume' => $src->volume,
+                    'acress_type' => $src->acress_type,
+                    'acress' => $src->acress,
                 ]);
 
                 foreach ($src->kebutuhan as $k) {

@@ -2,10 +2,25 @@ import { useState, Fragment } from 'react';
 import { Link, useForm, router } from '@inertiajs/react';
 import { Kartu, Tombol, Lencana, rupiah, lencanaStatus, SelKosong, PilihCari } from '../../umum/ui';
 
+function ToggleAcress({ tipe, onUbah }) {
+    const aktif = 'bg-blue-600 text-white';
+    const mati = 'bg-white text-slate-600';
+    return (
+        <div className="flex rounded border overflow-hidden shrink-0">
+            <button type="button" onClick={() => onUbah('nominal')}
+                className={`px-2 py-2 text-sm ${tipe === 'nominal' ? aktif : mati}`}>Rp</button>
+            <button type="button" onClick={() => onUbah('persen')}
+                className={`px-2 py-2 text-sm ${tipe === 'persen' ? aktif : mati}`}>%</button>
+        </div>
+    );
+}
+
 function FormulirBaris({ baris, jenis_kebutuhan, jenis_tambahan, onSelesai }) {
     const awal = {
         nilai: baris.nilai,
         volume: baris.volume,
+        acress_type: baris.acress_type ?? 'nominal',
+        acress: baris.acress ?? 0,
         kebutuhan: Object.fromEntries(jenis_kebutuhan.map((j) => [j.id, baris.kebutuhan?.[j.id] ?? 0])),
         tambahan: Object.fromEntries(jenis_tambahan.map((j) => [j.id, baris.tambahan?.[j.id] ?? 0])),
     };
@@ -17,6 +32,8 @@ function FormulirBaris({ baris, jenis_kebutuhan, jenis_tambahan, onSelesai }) {
             data: {
                 nilai: data.nilai,
                 volume: data.volume,
+                acress_type: data.acress_type,
+                acress: Number(data.acress) || 0,
                 kebutuhan: Object.entries(data.kebutuhan).map(([id, nominal]) => ({
                     jenis_kebutuhan_id: Number(id),
                     nominal: Number(nominal) || 0,
@@ -45,6 +62,14 @@ function FormulirBaris({ baris, jenis_kebutuhan, jenis_tambahan, onSelesai }) {
                     <input type="number" min="0" step="0.01" value={data.volume} onChange={(e) => setData('volume', e.target.value)} className={input} />
                     {errors.volume && <div className="text-red-600 text-xs mt-1">{errors.volume}</div>}
                     <p className="text-xs text-slate-500 mt-1">Volume 0 → total baris = 0.</p>
+                </div>
+                <div>
+                    <label className="block text-xs font-medium mb-1">Acress</label>
+                    <div className="flex gap-1">
+                        <ToggleAcress tipe={data.acress_type} onUbah={(t) => setData('acress_type', t)} />
+                        <input type="number" min="0" step="0.01" value={data.acress} onChange={(e) => setData('acress', e.target.value)} className={input} />
+                    </div>
+                    {errors.acress && <div className="text-red-600 text-xs mt-1">{errors.acress}</div>}
                 </div>
             </div>
 
@@ -97,6 +122,7 @@ function FormulirBaris({ baris, jenis_kebutuhan, jenis_tambahan, onSelesai }) {
 function FormulirTambah({ tahapId, skpd, rekening, volumeBawaan, onSelesai }) {
     const { data, setData, post, processing, errors } = useForm({
         skpd_id: skpd.id, rekening_id: '', nilai: 0, volume: volumeBawaan,
+        acress_type: 'persen', acress: 2.5,
     });
 
     const kirim = (e) => {
@@ -109,26 +135,36 @@ function FormulirTambah({ tahapId, skpd, rekening, volumeBawaan, onSelesai }) {
     return (
         <div>
             <p className="text-sm mb-3"><span className="font-medium">SKPD:</span> {skpd.kode} - {skpd.nama}</p>
-            <form onSubmit={kirim} className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
-                <div>
-                    <label className="block text-xs font-medium mb-1">Rekening</label>
-                    <PilihCari
-                        opsi={rekening.map((r) => ({ id: r.id, label: `${r.kode} - ${r.nama}` }))}
-                        nilai={data.rekening_id}
-                        onPilih={(id) => setData('rekening_id', id)}
-                        placeholder="Ketik kode/nama rekening…"
-                    />
-                    {errors.rekening_id && <div className="text-red-600 text-xs mt-1">{errors.rekening_id}</div>}
-                </div>
-                <div>
-                    <label className="block text-xs font-medium mb-1">Nilai / bulan</label>
-                    <input type="number" min="0" step="0.01" value={data.nilai} onChange={(e) => setData('nilai', e.target.value)} className={input} />
-                </div>
-                <div className="flex gap-2 items-end">
-                    <div className="flex-1">
+            <form onSubmit={kirim}>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+                    <div>
+                        <label className="block text-xs font-medium mb-1">Rekening</label>
+                        <PilihCari
+                            opsi={rekening.map((r) => ({ id: r.id, label: `${r.kode} - ${r.nama}` }))}
+                            nilai={data.rekening_id}
+                            onPilih={(id) => setData('rekening_id', id)}
+                            placeholder="Ketik kode/nama rekening…"
+                        />
+                        {errors.rekening_id && <div className="text-red-600 text-xs mt-1">{errors.rekening_id}</div>}
+                    </div>
+                    <div>
+                        <label className="block text-xs font-medium mb-1">Nilai / bulan</label>
+                        <input type="number" min="0" step="0.01" value={data.nilai} onChange={(e) => setData('nilai', e.target.value)} className={input} />
+                    </div>
+                    <div>
                         <label className="block text-xs font-medium mb-1">Volume</label>
                         <input type="number" min="0" step="0.01" value={data.volume} onChange={(e) => setData('volume', e.target.value)} className={input} />
                     </div>
+                    <div>
+                        <label className="block text-xs font-medium mb-1">Acress</label>
+                        <div className="flex gap-1">
+                            <ToggleAcress tipe={data.acress_type} onUbah={(t) => setData('acress_type', t)} />
+                            <input type="number" min="0" step="0.01" value={data.acress} onChange={(e) => setData('acress', e.target.value)} className={input} />
+                        </div>
+                        {errors.acress && <div className="text-red-600 text-xs mt-1">{errors.acress}</div>}
+                    </div>
+                </div>
+                <div className="flex gap-2 mt-3">
                     <Tombol disabled={processing}>Tambah</Tombol>
                     <Tombol varian="sekunder" type="button" onClick={onSelesai}>Batal</Tombol>
                 </div>
@@ -190,6 +226,8 @@ export default function MatriksSkpd({ tahap, skpd, baris, total_skpd, rekening, 
                                 <th className="py-2 pr-3 font-medium text-slate-600 text-right">Kebutuhan/bln</th>
                                 <th className="py-2 pr-3 font-medium text-slate-600 text-right">Total Kebutuhan</th>
                                 <th className="py-2 pr-3 font-medium text-slate-600 text-right">Total Tambahan</th>
+                                <th className="py-2 pr-3 font-medium text-slate-600 text-right">Subtotal</th>
+                                <th className="py-2 pr-3 font-medium text-slate-600 text-right">Acress</th>
                                 <th className="py-2 pr-3 font-medium text-slate-600 text-right">Total Pagu</th>
                                 {bisa_ubah && <th className="py-2 font-medium text-slate-600">Aksi</th>}
                             </tr>
@@ -210,6 +248,8 @@ export default function MatriksSkpd({ tahap, skpd, baris, total_skpd, rekening, 
                                         <td className="py-2 pr-3 text-right">{rupiah(b.kebutuhan_bulan)}</td>
                                         <td className="py-2 pr-3 text-right">{rupiah(b.total_kebutuhan)}</td>
                                         <td className="py-2 pr-3 text-right">{rupiah(b.total_kebutuhan_tambahan)}</td>
+                                        <td className="py-2 pr-3 text-right">{rupiah(b.subtotal)}</td>
+                                        <td className="py-2 pr-3 text-right">{b.acress_type === 'persen' ? `${b.acress}%` : rupiah(b.acress)}</td>
                                         <td className="py-2 pr-3 text-right font-semibold">{rupiah(b.total_pagu)}</td>
                                         {bisa_ubah && (
                                             <td className="py-2 whitespace-nowrap">
@@ -224,7 +264,7 @@ export default function MatriksSkpd({ tahap, skpd, baris, total_skpd, rekening, 
                                     </tr>
                                     {ubahId === b.id && bisa_ubah && (
                                         <tr key={`f-${b.id}`}>
-                                            <td colSpan={8} className="py-2">
+                                            <td colSpan={10} className="py-2">
                                                 <FormulirBaris
                                                     baris={b}
                                                     jenis_kebutuhan={jenis_kebutuhan}
@@ -236,7 +276,7 @@ export default function MatriksSkpd({ tahap, skpd, baris, total_skpd, rekening, 
                                     )}
                                 </Fragment>
                             ))}
-                            {tampil.length === 0 && <SelKosong colspan={8} teks="Belum ada baris anggaran untuk SKPD ini. Tambahkan baris di atas." />}
+                            {tampil.length === 0 && <SelKosong colspan={10} teks="Belum ada baris anggaran untuk SKPD ini. Tambahkan baris di atas." />}
                         </tbody>
                     </table>
                 </div>
@@ -244,7 +284,8 @@ export default function MatriksSkpd({ tahap, skpd, baris, total_skpd, rekening, 
 
             <p className="text-xs text-slate-500">
                 Kebutuhan/bulan = nilai + Σ jenis kebutuhan · Total kebutuhan = kebutuhan/bulan × volume ·
-                Total pagu = total kebutuhan + Σ kebutuhan tambahan. Baris bervolume 0 ditandai kuning.
+                Subtotal = total kebutuhan + Σ kebutuhan tambahan ·
+                Total pagu = subtotal + acress (Rp langsung, atau % dari subtotal). Baris bervolume 0 ditandai kuning.
             </p>
         </div>
     );

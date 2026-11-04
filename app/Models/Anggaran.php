@@ -13,9 +13,9 @@ class Anggaran extends Model
     public const CREATED_AT = 'dibuat_pada';
     public const UPDATED_AT = 'diubah_pada';
 
-    protected $fillable = ['tahap_id', 'skpd_id', 'rekening_id', 'nilai', 'volume'];
+    protected $fillable = ['tahap_id', 'skpd_id', 'rekening_id', 'nilai', 'volume', 'acress_type', 'acress'];
 
-    protected $casts = ['nilai' => 'decimal:2', 'volume' => 'decimal:2'];
+    protected $casts = ['nilai' => 'decimal:2', 'volume' => 'decimal:2', 'acress' => 'decimal:2'];
 
     public function tahap(): BelongsTo
     {
