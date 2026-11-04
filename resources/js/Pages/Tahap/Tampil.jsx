@@ -2,9 +2,16 @@ import { useState } from 'react';
 import { Link, router, useForm } from '@inertiajs/react';
 import { Kartu, Tombol, lencanaStatus, rupiah, tanggal } from '../../umum/ui';
 
-export default function Tampil({ tahap, total_anggaran, jml_baris, tahap_lain, bisa_ubah, bisa_kunci, bisa_salin }) {
+export default function Tampil({ tahap, total_anggaran, jml_baris, tahap_lain, bisa_ubah, bisa_kunci, bisa_salin, bisa_impor, jenis_kebutuhan = [], jenis_tambahan = [] }) {
     const [ubah, setUbah] = useState(false);
     const [salin, setSalin] = useState(false);
+    const [impor, setImpor] = useState(false);
+    const [modeTemplate, setModeTemplate] = useState('kosong');
+    const formImpor = useForm({
+        berkas: null,
+        kebutuhan: jenis_kebutuhan.map((j) => j.id),
+        tambahan: jenis_tambahan.map((j) => j.id),
+    });
     const formUbah = useForm({
         tahun: tahap.tahun,
         nama: tahap.nama,
@@ -23,6 +30,28 @@ export default function Tampil({ tahap, total_anggaran, jml_baris, tahap_lain, b
         e.preventDefault();
         if (!formSalin.data.sumber_id) return;
         formSalin.post(`/tahap/${tahap.id}/salin`, { onSuccess: () => setSalin(false) });
+    };
+
+    const toggleJenis = (kelompok, id) => {
+        const daftar = formImpor.data[kelompok];
+        formImpor.setData(kelompok, daftar.includes(id) ? daftar.filter((x) => x !== id) : [...daftar, id]);
+    };
+
+    const unduhTemplate = () => {
+        const q = new URLSearchParams();
+        q.append('mode', modeTemplate);
+        formImpor.data.kebutuhan.forEach((id) => q.append('kebutuhan[]', id));
+        formImpor.data.tambahan.forEach((id) => q.append('tambahan[]', id));
+        window.location.href = `/tahap/${tahap.id}/impor/template?${q.toString()}`;
+    };
+
+    const kirimImpor = (e) => {
+        e.preventDefault();
+        if (!formImpor.data.berkas) {
+            alert('Pilih berkas Excel terlebih dahulu.');
+            return;
+        }
+        formImpor.post(`/tahap/${tahap.id}/impor/pratampil`);
     };
 
     const aksi = (url, label, konfirmasi) => {
@@ -147,6 +176,69 @@ export default function Tampil({ tahap, total_anggaran, jml_baris, tahap_lain, b
                                 <Tombol varian="sekunder" type="button" onClick={() => setSalin(false)}>Batal</Tombol>
                             </div>
                         </form>
+                    )}
+                </Kartu>
+            )}
+
+            {bisa_impor && (
+                <Kartu judul="Impor Matriks dari Excel">
+                    {!impor ? (
+                        <Tombol varian="sekunder" onClick={() => setImpor(true)}>Impor&hellip;</Tombol>
+                    ) : (
+                        <div className="space-y-4">
+                            <div>
+                                <p className="text-sm font-medium mb-1">Jenis kebutuhan yang diikutsertakan</p>
+                                {jenis_kebutuhan.length === 0 && <p className="text-xs text-slate-400">Tidak ada.</p>}
+                                <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+                                    {jenis_kebutuhan.map((j) => (
+                                        <label key={j.id} className="inline-flex items-center gap-1">
+                                            <input type="checkbox" checked={formImpor.data.kebutuhan.includes(j.id)} onChange={() => toggleJenis('kebutuhan', j.id)} />
+                                            {j.nama}
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+                            <div>
+                                <p className="text-sm font-medium mb-1">Jenis kebutuhan tambahan yang diikutsertakan</p>
+                                {jenis_tambahan.length === 0 && <p className="text-xs text-slate-400">Tidak ada.</p>}
+                                <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+                                    {jenis_tambahan.map((j) => (
+                                        <label key={j.id} className="inline-flex items-center gap-1">
+                                            <input type="checkbox" checked={formImpor.data.tambahan.includes(j.id)} onChange={() => toggleJenis('tambahan', j.id)} />
+                                            {j.nama}
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+                            <div>
+                                <p className="text-sm font-medium mb-1">Template</p>
+                                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+                                    <label className="inline-flex items-center gap-1">
+                                        <input type="radio" name="modeTemplate" value="kosong" checked={modeTemplate === 'kosong'} onChange={() => setModeTemplate('kosong')} />
+                                        Kosong (hanya judul kolom)
+                                    </label>
+                                    <label className="inline-flex items-center gap-1">
+                                        <input type="radio" name="modeTemplate" value="data" checked={modeTemplate === 'data'} onChange={() => setModeTemplate('data')} />
+                                        Berisi data tahap ini (untuk revisi)
+                                    </label>
+                                    <Tombol varian="sekunder" type="button" onClick={unduhTemplate}>Unduh Template</Tombol>
+                                </div>
+                            </div>
+                            <form onSubmit={kirimImpor} className="space-y-3">
+                                <div>
+                                    <label className="block text-sm font-medium mb-1">Berkas Excel (.xlsx / .xls / .csv)</label>
+                                    <input type="file" accept=".xlsx,.xls,.csv" onChange={(e) => formImpor.setData('berkas', e.target.files[0])} className="text-sm" />
+                                </div>
+                                <p className="text-xs text-slate-500">
+                                    Satu baris = satu kombinasi SKPD &times; rekening. Baris berkode tak dikenal dilewati.
+                                    Sel kosong tidak mengubah data lama; baris baru memakai 0.
+                                </p>
+                                <div className="flex gap-2">
+                                    <Tombol disabled={formImpor.processing}>Unggah &amp; Pratampil</Tombol>
+                                    <Tombol varian="sekunder" type="button" onClick={() => setImpor(false)}>Batal</Tombol>
+                                </div>
+                            </form>
+                        </div>
                     )}
                 </Kartu>
             )}

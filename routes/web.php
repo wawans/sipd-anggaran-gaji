@@ -4,6 +4,7 @@ use App\Http\Controllers\AnggaranController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DasborController;
 use App\Http\Controllers\ImporMasterController;
+use App\Http\Controllers\ImporMatriksController;
 use App\Http\Controllers\JenisKebutuhanController;
 use App\Http\Controllers\JenisKebutuhanTambahanController;
 use App\Http\Controllers\LaporanController;
@@ -79,6 +80,11 @@ Route::middleware('auth')->group(function () {
     Route::put('/anggaran/{anggaran}', [AnggaranController::class, 'update'])->middleware('hak_akses:anggaran.edit');
     Route::delete('/anggaran/{anggaran}', [AnggaranController::class, 'destroy'])->middleware('hak_akses:anggaran.edit');
     Route::post('/tahap/{tahap}/salin', [AnggaranController::class, 'salin'])->middleware('hak_akses:anggaran.salin');
+
+    // Impor matriks anggaran dari Excel (level tahap)
+    Route::get('/tahap/{tahap}/impor/template', [ImporMatriksController::class, 'template'])->middleware('hak_akses:anggaran.edit');
+    Route::post('/tahap/{tahap}/impor/pratampil', [ImporMatriksController::class, 'pratampil'])->middleware('hak_akses:anggaran.edit');
+    Route::post('/tahap/{tahap}/impor/simpan', [ImporMatriksController::class, 'simpan'])->middleware('hak_akses:anggaran.edit');
 
     // Realisasi & impor
     Route::get('/realisasi', [RealisasiController::class, 'index'])->middleware('hak_akses:realisasi.view')->name('realisasi.index');

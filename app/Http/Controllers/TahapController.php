@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Anggaran;
+use App\Models\JenisKebutuhan;
+use App\Models\JenisKebutuhanTambahan;
 use App\Models\Tahap;
 use App\Traits\MencatatAudit;
 use Illuminate\Http\Request;
@@ -71,6 +73,9 @@ class TahapController extends Controller
             'bisa_ubah' => auth()->user()->punyaHakAkses('tahap.edit') && !$tahap->terkunci(),
             'bisa_kunci' => auth()->user()->punyaHakAkses('tahap.lock') && !$tahap->terkunci(),
             'bisa_salin' => auth()->user()->punyaHakAkses('anggaran.salin') && !$tahap->terkunci(),
+            'bisa_impor' => auth()->user()->punyaHakAkses('anggaran.edit') && !$tahap->terkunci(),
+            'jenis_kebutuhan' => JenisKebutuhan::where('aktif', true)->orderBy('urutan')->get(['id', 'nama']),
+            'jenis_tambahan' => JenisKebutuhanTambahan::where('aktif', true)->orderBy('urutan')->get(['id', 'nama']),
         ]);
     }
 
