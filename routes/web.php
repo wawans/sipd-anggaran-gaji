@@ -74,6 +74,7 @@ Route::middleware('auth')->group(function () {
 
     // Anggaran (matriks per tahap)
     Route::get('/tahap/{tahap}/anggaran', [AnggaranController::class, 'index'])->middleware('hak_akses:anggaran.view')->name('anggaran.index');
+    Route::get('/tahap/{tahap}/skpd/{skpd}/matriks', [AnggaranController::class, 'matriksSkpd'])->middleware('hak_akses:anggaran.view')->name('anggaran.matriksskpd');
     Route::post('/tahap/{tahap}/anggaran', [AnggaranController::class, 'store'])->middleware('hak_akses:anggaran.edit');
     Route::put('/anggaran/{anggaran}', [AnggaranController::class, 'update'])->middleware('hak_akses:anggaran.edit');
     Route::delete('/anggaran/{anggaran}', [AnggaranController::class, 'destroy'])->middleware('hak_akses:anggaran.edit');

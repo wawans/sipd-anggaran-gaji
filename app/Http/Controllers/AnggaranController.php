@@ -20,36 +20,40 @@ class AnggaranController extends Controller
 {
     use MencatatAudit;
 
+    /**
+     * Ringkasan matriks: tabel semua SKPD + total pagu masing-masing di tahap ini.
+     * Nama SKPD bisa diklik untuk melihat sub-tabel rincian rekening (read-only).
+     */
     public function index(Tahap $tahap): Response
     {
-        $daftar = Anggaran::with(['skpd:id,kode,nama', 'rekening:id,kode,nama', 'kebutuhan', 'kebutuhanTambahan'])
-            ->where('tahap_id', $tahap->id)
-            ->join('skpd as s', 's.id', '=', 'anggaran.skpd_id')
-            ->join('rekening as r', 'r.id', '=', 'anggaran.rekening_id')
-            ->orderBy('s.kode')->orderBy('r.urutan')->orderBy('r.kode')
-            ->select('anggaran.*')
-            ->get();
+        $daftarSkpd = Skpd::orderBy('kode')->get(['id', 'kode', 'nama']);
 
-        $hitung = DB::table('v_anggaran_baris')->where('tahap_id', $tahap->id)->get()->keyBy('id');
+        $hitung = DB::table('v_anggaran_baris as v')
+            ->join('rekening as r', 'r.id', '=', 'v.rekening_id')
+            ->where('v.tahap_id', $tahap->id)
+            ->orderBy('r.urutan')->orderBy('r.kode')
+            ->select('v.*', 'r.kode as rekening_kode', 'r.nama as rekening_nama')
+            ->get()
+            ->groupBy('skpd_id');
 
-        $baris = $daftar->map(function ($a) use ($hitung) {
-            $h = $hitung[$a->id] ?? null;
+        $ringkasan = $daftarSkpd->map(function ($s) use ($hitung) {
+            $rows = $hitung[$s->id] ?? collect();
 
             return [
-                'id' => $a->id,
-                'skpd_kode' => $a->skpd->kode,
-                'skpd_nama' => $a->skpd->nama,
-                'rekening_kode' => $a->rekening->kode,
-                'rekening_nama' => $a->rekening->nama,
-                'nilai' => (float) $a->nilai,
-                'volume' => (float) $a->volume,
-                'kebutuhan' => $a->kebutuhan->mapWithKeys(fn ($k) => [$k->jenis_kebutuhan_id => (float) $k->nominal]),
-                'tambahan' => $a->kebutuhanTambahan->mapWithKeys(fn ($k) => [$k->jenis_kebutuhan_tambahan_id => (float) $k->nominal]),
-                'kebutuhan_bulan' => (float) ($h->kebutuhan_bulan ?? 0),
-                'total_kebutuhan' => (float) ($h->total_kebutuhan ?? 0),
-                'total_kebutuhan_tambahan' => (float) ($h->total_kebutuhan_tambahan ?? 0),
-                'total_pagu' => (float) ($h->total_pagu ?? 0),
-                'volume_nol' => ((float) $a->volume) == 0,
+                'id' => $s->id,
+                'kode' => $s->kode,
+                'nama' => $s->nama,
+                'jml_baris' => $rows->count(),
+                'total_pagu' => (float) $rows->sum('total_pagu'),
+                'rincian' => $rows->map(fn ($h) => [
+                    'id' => $h->id,
+                    'rekening_kode' => $h->rekening_kode,
+                    'rekening_nama' => $h->rekening_nama,
+                    'nilai' => (float) $h->nilai,
+                    'volume' => (float) $h->volume,
+                    'volume_nol' => ((float) $h->volume) == 0,
+                    'total_pagu' => (float) $h->total_pagu,
+                ])->values(),
             ];
         });
 
@@ -57,14 +61,70 @@ class AnggaranController extends Controller
 
         return Inertia::render('Tahap/Anggaran', [
             'tahap' => $tahap,
+            'ringkasan_skpd' => $ringkasan,
+            'total_tahap' => (float) $ringkasan->sum('total_pagu'),
+            'bisa_ubah' => $pengguna->punyaHakAkses('anggaran.edit') && !$tahap->terkunci(),
+        ]);
+    }
+
+    /**
+     * Layar input matriks untuk satu SKPD saja.
+     */
+    public function matriksSkpd(Tahap $tahap, Skpd $skpd): Response
+    {
+        $daftar = Anggaran::with(['rekening:id,kode,nama', 'kebutuhan', 'kebutuhanTambahan'])
+            ->where('tahap_id', $tahap->id)
+            ->where('skpd_id', $skpd->id)
+            ->join('rekening as r', 'r.id', '=', 'anggaran.rekening_id')
+            ->orderBy('r.urutan')->orderBy('r.kode')
+            ->select('anggaran.*')
+            ->get();
+
+        $hitung = DB::table('v_anggaran_baris')
+            ->where('tahap_id', $tahap->id)
+            ->where('skpd_id', $skpd->id)
+            ->get()->keyBy('id');
+
+        $baris = $daftar->map(fn ($a) => $this->formatBaris($a, $hitung[$a->id] ?? null, $skpd));
+
+        $sudahAda = $daftar->pluck('rekening_id')->all();
+        $qRek = Rekening::where('aktif', true)->orderBy('urutan')->orderBy('kode');
+        if ($sudahAda) {
+            $qRek->whereNotIn('id', $sudahAda);
+        }
+
+        $pengguna = auth()->user();
+
+        return Inertia::render('Tahap/MatriksSkpd', [
+            'tahap' => $tahap,
+            'skpd' => ['id' => $skpd->id, 'kode' => $skpd->kode, 'nama' => $skpd->nama],
             'baris' => $baris,
-            'total_tahap' => (float) $baris->sum('total_pagu'),
-            'skpd' => Skpd::where('aktif', true)->orderBy('kode')->get(['id', 'kode', 'nama']),
-            'rekening' => Rekening::where('aktif', true)->orderBy('urutan')->orderBy('kode')->get(['id', 'kode', 'nama']),
+            'total_skpd' => (float) $baris->sum('total_pagu'),
+            'rekening' => $qRek->get(['id', 'kode', 'nama']),
             'jenis_kebutuhan' => JenisKebutuhan::where('aktif', true)->orderBy('urutan')->get(['id', 'nama']),
             'jenis_tambahan' => JenisKebutuhanTambahan::where('aktif', true)->orderBy('urutan')->get(['id', 'nama']),
             'bisa_ubah' => $pengguna->punyaHakAkses('anggaran.edit') && !$tahap->terkunci(),
         ]);
+    }
+
+    protected function formatBaris(Anggaran $a, $h, Skpd $skpd): array
+    {
+        return [
+            'id' => $a->id,
+            'skpd_kode' => $skpd->kode,
+            'skpd_nama' => $skpd->nama,
+            'rekening_kode' => $a->rekening->kode,
+            'rekening_nama' => $a->rekening->nama,
+            'nilai' => (float) $a->nilai,
+            'volume' => (float) $a->volume,
+            'kebutuhan' => $a->kebutuhan->mapWithKeys(fn ($k) => [$k->jenis_kebutuhan_id => (float) $k->nominal]),
+            'tambahan' => $a->kebutuhanTambahan->mapWithKeys(fn ($k) => [$k->jenis_kebutuhan_tambahan_id => (float) $k->nominal]),
+            'kebutuhan_bulan' => (float) ($h->kebutuhan_bulan ?? 0),
+            'total_kebutuhan' => (float) ($h->total_kebutuhan ?? 0),
+            'total_kebutuhan_tambahan' => (float) ($h->total_kebutuhan_tambahan ?? 0),
+            'total_pagu' => (float) ($h->total_pagu ?? 0),
+            'volume_nol' => ((float) $a->volume) == 0,
+        ];
     }
 
     public function store(Request $request, Tahap $tahap)
