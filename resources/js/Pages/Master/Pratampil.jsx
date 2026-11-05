@@ -1,38 +1,44 @@
 import { useState } from 'react';
 import { Link, router } from '@inertiajs/react';
 import { Kartu, Tombol } from '../../umum/ui';
+import { DialogKonfirmasi } from '@/components/ui/dialog-konfirmasi';
 
 export default function Pratampil({ jenis, judul, token, berkas, header, contoh, jml_baris }) {
     const [kolomKode, setKolomKode] = useState('');
     const [kolomNama, setKolomNama] = useState('');
     const [kolomInduk, setKolomInduk] = useState('');
+    const [galat, setGalat] = useState('');
+    const [dialogTerbuka, setDialogTerbuka] = useState(false);
 
     const input = 'w-full border rounded px-3 py-2 text-sm';
 
-    const simpan = () => {
+    const mintaSimpan = () => {
         if (kolomKode === '' || kolomNama === '') {
-            alert('Pilih kolom Kode dan kolom Nama terlebih dahulu.');
+            setGalat('Pilih kolom Kode dan kolom Nama terlebih dahulu.');
             return;
         }
         if (kolomKode === kolomNama) {
-            alert('Kolom Kode dan kolom Nama harus berbeda.');
+            setGalat('Kolom Kode dan kolom Nama harus berbeda.');
             return;
         }
         if (kolomInduk !== '' && (kolomInduk === kolomKode || kolomInduk === kolomNama)) {
-            alert('Kolom Kode Induk harus berbeda dari kolom Kode dan kolom Nama.');
+            setGalat('Kolom Kode Induk harus berbeda dari kolom Kode dan kolom Nama.');
             return;
         }
-        if (confirm(`Simpan impor ${judul}: ${jml_baris} baris dari ${berkas}?`)) {
-            const muatan = {
-                token,
-                kolom_kode: parseInt(kolomKode, 10),
-                kolom_nama: parseInt(kolomNama, 10),
-            };
-            if (jenis === 'rekening' && kolomInduk !== '') {
-                muatan.kolom_induk = parseInt(kolomInduk, 10);
-            }
-            router.post(`/${jenis}/impor/simpan`, muatan);
+        setGalat('');
+        setDialogTerbuka(true);
+    };
+
+    const simpan = () => {
+        const muatan = {
+            token,
+            kolom_kode: parseInt(kolomKode, 10),
+            kolom_nama: parseInt(kolomNama, 10),
+        };
+        if (jenis === 'rekening' && kolomInduk !== '') {
+            muatan.kolom_induk = parseInt(kolomInduk, 10);
         }
+        router.post(`/${jenis}/impor/simpan`, muatan);
     };
 
     return (
@@ -113,10 +119,19 @@ export default function Pratampil({ jenis, judul, token, berkas, header, contoh,
                 </p>
             </Kartu>
 
+            {galat && <p className="text-sm text-red-600">{galat}</p>}
             <div className="flex gap-2">
-                <Tombol onClick={simpan}>Simpan Impor</Tombol>
+                <Tombol onClick={mintaSimpan}>Simpan Impor</Tombol>
                 <Link href={`/${jenis}/impor`}><Tombol varian="sekunder">Batal</Tombol></Link>
             </div>
+            <DialogKonfirmasi
+                terbuka={dialogTerbuka}
+                onTerbukaBerubah={setDialogTerbuka}
+                judul={`Simpan impor ${judul}?`}
+                deskripsi={`${jml_baris} baris dari ${berkas}.`}
+                labelAksi="Simpan Impor"
+                onKonfirmasi={simpan}
+            />
         </div>
     );
 }

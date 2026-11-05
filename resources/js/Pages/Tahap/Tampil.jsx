@@ -1,12 +1,15 @@
 import { useState } from 'react';
 import { Link, router, useForm } from '@inertiajs/react';
 import { Kartu, Tombol, lencanaStatus, rupiah, tanggal } from '../../umum/ui';
+import { DialogKonfirmasi } from '@/components/ui/dialog-konfirmasi';
 
 export default function Tampil({ tahap, total_anggaran, jml_baris, tahap_lain, bisa_ubah, bisa_kunci, bisa_salin, bisa_impor, jenis_kebutuhan = [], jenis_tambahan = [] }) {
     const [ubah, setUbah] = useState(false);
     const [salin, setSalin] = useState(false);
     const [impor, setImpor] = useState(false);
     const [modeTemplate, setModeTemplate] = useState('kosong');
+    const [aksiTerkonfirmasi, setAksiTerkonfirmasi] = useState(null);
+    const [galatImpor, setGalatImpor] = useState('');
     const formImpor = useForm({
         berkas: null,
         kebutuhan: jenis_kebutuhan.map((j) => j.id),
@@ -48,14 +51,17 @@ export default function Tampil({ tahap, total_anggaran, jml_baris, tahap_lain, b
     const kirimImpor = (e) => {
         e.preventDefault();
         if (!formImpor.data.berkas) {
-            alert('Pilih berkas Excel terlebih dahulu.');
+            setGalatImpor('Pilih berkas Excel terlebih dahulu.');
             return;
         }
+        setGalatImpor('');
         formImpor.post(`/tahap/${tahap.id}/impor/pratampil`);
     };
 
-    const aksi = (url, label, konfirmasi) => {
-        if (confirm(konfirmasi)) router.post(url);
+    const konfirmasiAksi = () => {
+        if (!aksiTerkonfirmasi) return;
+        router.post(aksiTerkonfirmasi.url);
+        setAksiTerkonfirmasi(null);
     };
 
     const input = 'w-full border rounded px-3 py-2 text-sm';
@@ -127,13 +133,13 @@ export default function Tampil({ tahap, total_anggaran, jml_baris, tahap_lain, b
                         </Link>
                         {bisa_ubah && tahap.status === 'draf' && (
                             <Tombol varian="hijau" className="w-full"
-                                onClick={() => aksi(`/tahap/${tahap.id}/finalkan`, 'Finalkan', 'Finalkan tahap ini?')}>
+                                onClick={() => setAksiTerkonfirmasi({ url: `/tahap/${tahap.id}/finalkan`, judul: 'Finalkan tahap?', deskripsi: 'Finalkan tahap ini?', labelAksi: 'Finalkan' })}>
                                 Finalkan Tahap
                             </Tombol>
                         )}
                         {bisa_kunci && (
                             <Tombol varian="kuning" className="w-full"
-                                onClick={() => aksi(`/tahap/${tahap.id}/kunci`, 'Kunci', 'KUNCI tahap ini? Tahap yang terkunci tidak bisa diubah lagi oleh siapa pun.')}>
+                                onClick={() => setAksiTerkonfirmasi({ url: `/tahap/${tahap.id}/kunci`, judul: 'Kunci tahap?', deskripsi: 'KUNCI tahap ini? Tahap yang terkunci tidak bisa diubah lagi oleh siapa pun.', labelAksi: 'Kunci', varianAksi: 'destructive' })}>
                                 Kunci Tahap (Sahkan)
                             </Tombol>
                         )}
@@ -229,6 +235,7 @@ export default function Tampil({ tahap, total_anggaran, jml_baris, tahap_lain, b
                                     <label className="block text-sm font-medium mb-1">Berkas Excel (.xlsx / .xls / .csv)</label>
                                     <input type="file" accept=".xlsx,.xls,.csv" onChange={(e) => formImpor.setData('berkas', e.target.files[0])} className="text-sm" />
                                 </div>
+                                {galatImpor && <p className="text-sm text-red-600">{galatImpor}</p>}
                                 <p className="text-xs text-slate-500">
                                     Satu baris = satu kombinasi SKPD &times; rekening. Baris berkode tak dikenal dilewati.
                                     Sel kosong tidak mengubah data lama; baris baru memakai 0.
@@ -242,6 +249,15 @@ export default function Tampil({ tahap, total_anggaran, jml_baris, tahap_lain, b
                     )}
                 </Kartu>
             )}
+            <DialogKonfirmasi
+                terbuka={aksiTerkonfirmasi !== null}
+                onTerbukaBerubah={(v) => { if (!v) setAksiTerkonfirmasi(null); }}
+                judul={aksiTerkonfirmasi?.judul ?? ''}
+                deskripsi={aksiTerkonfirmasi?.deskripsi ?? ''}
+                labelAksi={aksiTerkonfirmasi?.labelAksi ?? 'Ya'}
+                varianAksi={aksiTerkonfirmasi?.varianAksi ?? 'default'}
+                onKonfirmasi={konfirmasiAksi}
+            />
         </div>
     );
 }

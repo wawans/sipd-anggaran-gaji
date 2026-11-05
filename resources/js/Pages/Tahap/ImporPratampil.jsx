@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, router } from '@inertiajs/react';
 import { Kartu, Tombol, Lencana, rupiah } from '../../umum/ui';
+import { DialogKonfirmasi } from '@/components/ui/dialog-konfirmasi';
 
 const badgeStatus = (status) => {
     if (status === 'baru') return <Lencana tipe="hijau">Baru</Lencana>;
@@ -33,14 +34,19 @@ export default function ImporPratampil({ tahap, token, berkas, header, jml_baris
         router.post(urlPratampil, muatan);
     };
 
-    const simpan = () => {
+    const [galat, setGalat] = useState('');
+    const [dialogTerbuka, setDialogTerbuka] = useState(false);
+
+    const mintaSimpan = () => {
         if (peta.kode_skpd === '' || peta.kode_rekening === '') {
-            alert('Pilih kolom Kode SKPD dan Kode Rekening terlebih dahulu.');
+            setGalat('Pilih kolom Kode SKPD dan Kode Rekening terlebih dahulu.');
             return;
         }
-        if (!confirm(`Simpan impor matriks tahap ${tahap.nama}? ${ringkas.baru} baris baru, ${ringkas.ubah} diperbarui, ${ringkas.lewati} dilewati.`)) {
-            return;
-        }
+        setGalat('');
+        setDialogTerbuka(true);
+    };
+
+    const simpan = () => {
         const muatan = { token, pemetaan: {} };
         Object.entries(peta).forEach(([k, v]) => {
             muatan.pemetaan[k] = v === '' ? null : parseInt(v, 10);
@@ -131,10 +137,19 @@ export default function ImporPratampil({ tahap, token, berkas, header, jml_baris
                 </div>
             </Kartu>
 
+            {galat && <p className="text-sm text-red-600">{galat}</p>}
             <div className="flex gap-2">
-                <Tombol onClick={simpan}>Simpan Impor</Tombol>
+                <Tombol onClick={mintaSimpan}>Simpan Impor</Tombol>
                 <Link href={`/tahap/${tahap.id}`}><Tombol varian="sekunder">Batal</Tombol></Link>
             </div>
+            <DialogKonfirmasi
+                terbuka={dialogTerbuka}
+                onTerbukaBerubah={setDialogTerbuka}
+                judul={`Simpan impor matriks tahap ${tahap.nama}?`}
+                deskripsi={`${ringkas.baru} baris baru, ${ringkas.ubah} diperbarui, ${ringkas.lewati} dilewati.`}
+                labelAksi="Simpan Impor"
+                onKonfirmasi={simpan}
+            />
 
             <p className="text-xs text-slate-500">
                 Baris "Ubah": hanya sel yang terisi yang diperbarui; sel kosong tidak mengubah data lama.

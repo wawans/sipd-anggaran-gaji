@@ -1,17 +1,7 @@
 import { useState } from 'react';
 import { useForm, usePage, Link, router } from '@inertiajs/react';
 import { Kartu, Tombol, Lencana, Paginasi, SelKosong, PilihCari } from '../../umum/ui';
-import {
-    AlertDialog,
-    AlertDialogTrigger,
-    AlertDialogContent,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogCancel,
-    AlertDialogAction,
-} from '@/components/ui/alert-dialog';
+import { DialogKonfirmasi } from '@/components/ui/dialog-konfirmasi';
 
 function Formulir({ field, awal, aksi, metode, tombolSimpan, onSelesai, opsiInduk = [] }) {
     const { data, setData, post, put, processing, errors } = useForm(awal);
@@ -67,6 +57,7 @@ export default function Index({ judul, rute, kolom, field, data, semua_rekening 
 
     const [tambah, setTambah] = useState(false);
     const [ubah, setUbah] = useState(null);
+    const [hapusBaris, setHapusBaris] = useState(null);
 
     // Kandidat induk: semua rekening kecuali diri sendiri & keturunannya (cegah siklus)
     const kandidatInduk = (kecuali) => {
@@ -179,31 +170,9 @@ export default function Index({ judul, rute, kolom, field, data, semua_rekening 
                                                 >
                                                     Ubah
                                                 </button>
-                                                <AlertDialog>
-                                                    <AlertDialogTrigger asChild>
-                                                        <button className="text-red-600 hover:underline text-sm">
-                                                            Hapus
-                                                        </button>
-                                                    </AlertDialogTrigger>
-                                                    <AlertDialogContent>
-                                                        <AlertDialogHeader>
-                                                            <AlertDialogTitle>Hapus {judul}?</AlertDialogTitle>
-                                                            <AlertDialogDescription>
-                                                                Hapus {judul} &quot;{namaBaris(baris)}&quot;?
-                                                                Tindakan ini tidak bisa dibatalkan.
-                                                            </AlertDialogDescription>
-                                                        </AlertDialogHeader>
-                                                        <AlertDialogFooter>
-                                                            <AlertDialogCancel>Batal</AlertDialogCancel>
-                                                            <AlertDialogAction
-                                                                variant="destructive"
-                                                                onClick={() => hapus(baris)}
-                                                            >
-                                                                Hapus
-                                                            </AlertDialogAction>
-                                                        </AlertDialogFooter>
-                                                    </AlertDialogContent>
-                                                </AlertDialog>
+                                                <button onClick={() => setHapusBaris(baris)} className="text-red-600 hover:underline text-sm">
+                                                    Hapus
+                                                </button>
                                             </div>
                                         </td>
                                     )}
@@ -215,6 +184,15 @@ export default function Index({ judul, rute, kolom, field, data, semua_rekening 
                 </div>
                 <Paginasi data={data} />
             </Kartu>
+            <DialogKonfirmasi
+                terbuka={hapusBaris !== null}
+                onTerbukaBerubah={(v) => { if (!v) setHapusBaris(null); }}
+                judul={`Hapus ${judul}?`}
+                deskripsi={hapusBaris ? `Hapus ${judul} "${namaBaris(hapusBaris)}"? Tindakan ini tidak bisa dibatalkan.` : ''}
+                labelAksi="Hapus"
+                varianAksi="destructive"
+                onKonfirmasi={() => { if (hapusBaris) hapus(hapusBaris); setHapusBaris(null); }}
+            />
         </div>
     );
 }

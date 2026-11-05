@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { Link, useForm, router } from '@inertiajs/react';
 import { Kartu, Tombol, SelKosong } from '../../umum/ui';
+import { DialogKonfirmasi } from '@/components/ui/dialog-konfirmasi';
 
 export default function Ubah({ template, rekening }) {
     const form = useForm({ nama: template.nama, kolom_skpd: template.kolom_skpd });
@@ -15,8 +17,12 @@ export default function Ubah({ template, rekening }) {
         formKolom.post(`/mapping-template/${template.id}/kolom`, { onSuccess: () => formKolom.reset() });
     };
 
-    const hapusKolom = (id) => {
-        if (confirm('Hapus pemetaan kolom ini?')) router.delete(`/mapping-template/kolom/${id}`);
+    const [hapusId, setHapusId] = useState(null);
+
+    const hapusKolom = () => {
+        if (hapusId === null) return;
+        router.delete(`/mapping-template/kolom/${hapusId}`);
+        setHapusId(null);
     };
 
     const input = 'w-full border rounded px-3 py-2 text-sm';
@@ -62,7 +68,7 @@ export default function Ubah({ template, rekening }) {
                                     <td className="py-2 pr-4">{k.kolom_excel}</td>
                                     <td className="py-2 pr-4">{k.rekening.kode} - {k.rekening.nama}</td>
                                     <td className="py-2">
-                                        <button onClick={() => hapusKolom(k.id)} className="text-red-600 hover:underline text-sm">
+                                        <button onClick={() => setHapusId(k.id)} className="text-red-600 hover:underline text-sm">
                                             Hapus
                                         </button>
                                     </td>
@@ -96,6 +102,15 @@ export default function Ubah({ template, rekening }) {
                     </div>
                 </form>
             </Kartu>
+            <DialogKonfirmasi
+                terbuka={hapusId !== null}
+                onTerbukaBerubah={(v) => { if (!v) setHapusId(null); }}
+                judul="Hapus pemetaan kolom?"
+                deskripsi="Hapus pemetaan kolom ini? Tindakan ini tidak bisa dibatalkan."
+                labelAksi="Hapus"
+                varianAksi="destructive"
+                onKonfirmasi={hapusKolom}
+            />
         </div>
     );
 }

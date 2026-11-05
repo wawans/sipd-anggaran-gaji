@@ -1,11 +1,13 @@
+import { useState } from 'react';
 import { Link, router } from '@inertiajs/react';
 import { Kartu, Tombol, Lencana, rupiah } from '../../umum/ui';
+import { DialogKonfirmasi } from '@/components/ui/dialog-konfirmasi';
 
 export default function Pratampil({ token, periode, mode, template, berkas, jml_cocok, jml_sel, tak_cocok, kolom_tak_ditemukan, contoh }) {
+    const [dialogTerbuka, setDialogTerbuka] = useState(false);
+
     const simpan = () => {
-        if (confirm(`Simpan ${jml_sel} sel realisasi periode ${periode} (mode: ${mode})?`)) {
-            router.post('/realisasi/impor/simpan', { token });
-        }
+        router.post('/realisasi/impor/simpan', { token });
     };
 
     return (
@@ -74,9 +76,17 @@ export default function Pratampil({ token, periode, mode, template, berkas, jml_
             </Kartu>
 
             <div className="flex gap-2">
-                <Tombol disabled={jml_cocok === 0} onClick={simpan}>Simpan Impor</Tombol>
+                <Tombol disabled={jml_cocok === 0} onClick={() => setDialogTerbuka(true)}>Simpan Impor</Tombol>
                 <Link href="/realisasi/impor"><Tombol varian="sekunder">Batal</Tombol></Link>
             </div>
+            <DialogKonfirmasi
+                terbuka={dialogTerbuka}
+                onTerbukaBerubah={setDialogTerbuka}
+                judul="Simpan impor realisasi?"
+                deskripsi={`Simpan ${jml_sel} sel realisasi periode ${periode} (mode: ${mode}).`}
+                labelAksi="Simpan Impor"
+                onKonfirmasi={simpan}
+            />
         </div>
     );
 }

@@ -1,6 +1,7 @@
 import { useState, Fragment } from 'react';
 import { Link, useForm, router } from '@inertiajs/react';
 import { Kartu, Tombol, Lencana, rupiah, lencanaStatus, SelKosong, PilihCari } from '../../umum/ui';
+import { DialogKonfirmasi } from '@/components/ui/dialog-konfirmasi';
 
 function ToggleAcress({ tipe, onUbah }) {
     const aktif = 'bg-blue-600 text-white';
@@ -184,8 +185,12 @@ export default function MatriksSkpd({ tahap, skpd, baris, total_skpd, rekening, 
         return b.rekening_kode.toLowerCase().includes(q) || b.rekening_nama.toLowerCase().includes(q);
     });
 
-    const hapus = (id) => {
-        if (confirm('Hapus baris anggaran ini beserta rinciannya?')) router.delete(`/anggaran/${id}`);
+    const [hapusId, setHapusId] = useState(null);
+
+    const hapus = () => {
+        if (hapusId === null) return;
+        router.delete(`/anggaran/${hapusId}`);
+        setHapusId(null);
     };
 
     return (
@@ -256,7 +261,7 @@ export default function MatriksSkpd({ tahap, skpd, baris, total_skpd, rekening, 
                                                 <button onClick={() => setUbahId(ubahId === b.id ? null : b.id)} className="text-blue-600 hover:underline text-sm mr-2">
                                                     Ubah
                                                 </button>
-                                                <button onClick={() => hapus(b.id)} className="text-red-600 hover:underline text-sm">
+                                                <button onClick={() => setHapusId(b.id)} className="text-red-600 hover:underline text-sm">
                                                     Hapus
                                                 </button>
                                             </td>
@@ -287,6 +292,15 @@ export default function MatriksSkpd({ tahap, skpd, baris, total_skpd, rekening, 
                 Subtotal = total kebutuhan + Σ kebutuhan tambahan ·
                 Total pagu = subtotal + acress (Rp langsung, atau % dari subtotal). Baris bervolume 0 ditandai kuning.
             </p>
+            <DialogKonfirmasi
+                terbuka={hapusId !== null}
+                onTerbukaBerubah={(v) => { if (!v) setHapusId(null); }}
+                judul="Hapus baris anggaran?"
+                deskripsi="Hapus baris anggaran ini beserta rinciannya? Tindakan ini tidak bisa dibatalkan."
+                labelAksi="Hapus"
+                varianAksi="destructive"
+                onKonfirmasi={hapus}
+            />
         </div>
     );
 }
