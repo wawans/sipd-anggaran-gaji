@@ -73,6 +73,14 @@ export default function Utama({ children }) {
                     })}
                 </nav>
                 <div className="p-3 border-t border-slate-700">
+                    <Link
+                        href="/kata-sandi"
+                        className={`block px-3 py-2 rounded text-sm mb-0.5 ${
+                            url.startsWith('/kata-sandi') ? 'bg-slate-700 text-white font-medium' : 'hover:bg-slate-700/50'
+                        }`}
+                    >
+                        Ubah Kata Sandi
+                    </Link>
                     <button
                         onClick={() => router.post('/keluar')}
                         className="w-full text-left px-3 py-2 rounded text-sm hover:bg-slate-700/50"

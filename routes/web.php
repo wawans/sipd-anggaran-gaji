@@ -7,6 +7,7 @@ use App\Http\Controllers\ImporMasterController;
 use App\Http\Controllers\ImporMatriksController;
 use App\Http\Controllers\JenisKebutuhanController;
 use App\Http\Controllers\JenisKebutuhanTambahanController;
+use App\Http\Controllers\KataSandiController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\LogAuditController;
 use App\Http\Controllers\MappingTemplateController;
@@ -25,6 +26,11 @@ Route::post('/masuk', [AuthController::class, 'masuk'])->middleware('guest');
 
 Route::middleware('auth')->group(function () {
     Route::post('/keluar', [AuthController::class, 'keluar'])->name('keluar');
+
+    // Ubah kata sandi sendiri — semua role, tanpa hak akses khusus.
+    // Tanpa parameter id: controller memakai user dari sesi auth.
+    Route::get('/kata-sandi', [KataSandiController::class, 'edit'])->name('kata-sandi.edit');
+    Route::put('/kata-sandi', [KataSandiController::class, 'update'])->name('kata-sandi.update');
     Route::get('/', fn () => redirect('/dasbor'));
 
     Route::get('/dasbor', [DasborController::class, 'index'])
