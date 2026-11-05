@@ -31,6 +31,7 @@ import {
     SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { Separator } from '@/components/ui/separator';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -104,6 +105,7 @@ export default function Utama({ children }) {
 
     return (
         <SidebarProvider>
+            <TooltipProvider>
             <Sidebar>
                 <SidebarHeader>
                     <div className="px-2 py-1">
@@ -201,6 +203,7 @@ export default function Utama({ children }) {
                     </div>
                 </div>
             </SidebarInset>
+            </TooltipProvider>
         </SidebarProvider>
     );
 }
