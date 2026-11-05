@@ -1,6 +1,17 @@
 import { useState } from 'react';
 import { useForm, usePage, Link, router } from '@inertiajs/react';
 import { Kartu, Tombol, Lencana, Paginasi, SelKosong, PilihCari } from '../../umum/ui';
+import {
+    AlertDialog,
+    AlertDialogTrigger,
+    AlertDialogContent,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogCancel,
+    AlertDialogAction,
+} from '@/components/ui/alert-dialog';
 
 function Formulir({ field, awal, aksi, metode, tombolSimpan, onSelesai, opsiInduk = [] }) {
     const { data, setData, post, put, processing, errors } = useForm(awal);
@@ -89,11 +100,10 @@ export default function Index({ judul, rute, kolom, field, data, semua_rekening 
     };
 
     const hapus = (baris) => {
-        const nama = baris.kode ? `${baris.kode} - ${baris.nama}` : baris.nama;
-        if (confirm(`Hapus ${judul} "${nama}"? Tindakan ini tidak bisa dibatalkan.`)) {
-            router.delete(`/${rute}/${baris.id}`);
-        }
+        router.delete(`/${rute}/${baris.id}`);
     };
+
+    const namaBaris = (baris) => (baris.kode ? `${baris.kode} - ${baris.nama}` : baris.nama);
 
     return (
         <div className="space-y-4">
@@ -169,12 +179,31 @@ export default function Index({ judul, rute, kolom, field, data, semua_rekening 
                                                 >
                                                     Ubah
                                                 </button>
-                                                <button
-                                                    onClick={() => hapus(baris)}
-                                                    className="text-red-600 hover:underline text-sm"
-                                                >
-                                                    Hapus
-                                                </button>
+                                                <AlertDialog>
+                                                    <AlertDialogTrigger asChild>
+                                                        <button className="text-red-600 hover:underline text-sm">
+                                                            Hapus
+                                                        </button>
+                                                    </AlertDialogTrigger>
+                                                    <AlertDialogContent>
+                                                        <AlertDialogHeader>
+                                                            <AlertDialogTitle>Hapus {judul}?</AlertDialogTitle>
+                                                            <AlertDialogDescription>
+                                                                Hapus {judul} &quot;{namaBaris(baris)}&quot;?
+                                                                Tindakan ini tidak bisa dibatalkan.
+                                                            </AlertDialogDescription>
+                                                        </AlertDialogHeader>
+                                                        <AlertDialogFooter>
+                                                            <AlertDialogCancel>Batal</AlertDialogCancel>
+                                                            <AlertDialogAction
+                                                                variant="destructive"
+                                                                onClick={() => hapus(baris)}
+                                                            >
+                                                                Hapus
+                                                            </AlertDialogAction>
+                                                        </AlertDialogFooter>
+                                                    </AlertDialogContent>
+                                                </AlertDialog>
                                             </div>
                                         </td>
                                     )}
