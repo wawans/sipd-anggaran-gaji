@@ -6,9 +6,10 @@ use App\Models\Tahap;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithStrictNullComparison;
 use Maatwebsite\Excel\Concerns\WithTitle;
 
-class LaporanExport implements FromCollection, WithHeadings, WithTitle
+class LaporanExport implements FromCollection, WithHeadings, WithStrictNullComparison, WithTitle
 {
     public function __construct(
         private Tahap $tahap,
