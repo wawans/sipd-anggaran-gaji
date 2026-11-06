@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\MasterExport;
 use App\Models\JenisKebutuhanTambahan;
 use App\Models\AnggaranKebutuhanTambahan;
 use App\Traits\MencatatAudit;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -36,6 +39,20 @@ class JenisKebutuhanTambahanController extends Controller
         return Inertia::render('Master/Index', array_merge($this->konfigurasi(), [
             'data' => JenisKebutuhanTambahan::orderBy('urutan')->orderBy('nama')->paginate(20),
         ]));
+    }
+
+    public function ekspor(): BinaryFileResponse
+    {
+        $baris = JenisKebutuhanTambahan::orderBy('urutan')->orderBy('nama')->get()->map(fn ($j) => [
+            $j->nama,
+            $j->urutan ?? 0,
+            $j->aktif ? 'Aktif' : 'Nonaktif',
+        ])->all();
+
+        return Excel::download(
+            new MasterExport('Jenis Kebutuhan Tambahan', ['Nama', 'Urutan', 'Status'], $baris),
+            'master-jenis-kebutuhan-tambahan-'.now()->format('Y-m-d').'.xlsx'
+        );
     }
 
     public function store(Request $request)

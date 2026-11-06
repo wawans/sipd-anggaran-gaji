@@ -100,14 +100,17 @@ export default function Index({ judul, rute, kolom, field, data, semua_rekening 
         <div className="space-y-4">
             <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-bold">Master {judul}</h1>
-                {bisaKelola && !tambah && (
-                    <div className="flex gap-2">
-                        {(rute === 'skpd' || rute === 'rekening') && (
-                            <Link href={`/${rute}/impor`}><Tombol varian="sekunder">Impor Excel</Tombol></Link>
-                        )}
-                        <Tombol onClick={() => { setTambah(true); setUbah(null); }}>Tambah {judul}</Tombol>
-                    </div>
-                )}
+                <div className="flex gap-2">
+                    <a href={`/${rute}/ekspor`}><Tombol varian="sekunder">Export Excel</Tombol></a>
+                    {bisaKelola && !tambah && (
+                        <>
+                            {(rute === 'skpd' || rute === 'rekening') && (
+                                <Link href={`/${rute}/impor`}><Tombol varian="sekunder">Impor Excel</Tombol></Link>
+                            )}
+                            <Tombol onClick={() => { setTambah(true); setUbah(null); }}>Tambah {judul}</Tombol>
+                        </>
+                    )}
+                </div>
             </div>
 
             {bisaKelola && tambah && (

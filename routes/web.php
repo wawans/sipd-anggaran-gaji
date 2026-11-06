@@ -38,12 +38,14 @@ Route::middleware('auth')->group(function () {
 
     // Master SKPD
     Route::get('/skpd', [SkpdController::class, 'index'])->middleware('hak_akses:skpd.view')->name('skpd.index');
+    Route::get('/skpd/ekspor', [SkpdController::class, 'ekspor'])->middleware('hak_akses:skpd.view')->name('skpd.ekspor');
     Route::post('/skpd', [SkpdController::class, 'store'])->middleware('hak_akses:skpd.manage');
     Route::put('/skpd/{skpd}', [SkpdController::class, 'update'])->middleware('hak_akses:skpd.manage');
     Route::delete('/skpd/{skpd}', [SkpdController::class, 'destroy'])->middleware('hak_akses:skpd.manage');
 
     // Master rekening
     Route::get('/rekening', [RekeningController::class, 'index'])->middleware('hak_akses:rekening.view')->name('rekening.index');
+    Route::get('/rekening/ekspor', [RekeningController::class, 'ekspor'])->middleware('hak_akses:rekening.view')->name('rekening.ekspor');
     Route::post('/rekening', [RekeningController::class, 'store'])->middleware('hak_akses:rekening.manage');
     Route::put('/rekening/{rekening}', [RekeningController::class, 'update'])->middleware('hak_akses:rekening.manage');
     Route::delete('/rekening/{rekening}', [RekeningController::class, 'destroy'])->middleware('hak_akses:rekening.manage');
@@ -61,12 +63,14 @@ Route::middleware('auth')->group(function () {
 
     // Master jenis kebutuhan
     Route::get('/jenis-kebutuhan', [JenisKebutuhanController::class, 'index'])->middleware('hak_akses:jenis_kebutuhan.view')->name('jenis-kebutuhan.index');
+    Route::get('/jenis-kebutuhan/ekspor', [JenisKebutuhanController::class, 'ekspor'])->middleware('hak_akses:jenis_kebutuhan.view')->name('jenis-kebutuhan.ekspor');
     Route::post('/jenis-kebutuhan', [JenisKebutuhanController::class, 'store'])->middleware('hak_akses:jenis_kebutuhan.manage');
     Route::put('/jenis-kebutuhan/{jenisKebutuhan}', [JenisKebutuhanController::class, 'update'])->middleware('hak_akses:jenis_kebutuhan.manage');
     Route::delete('/jenis-kebutuhan/{jenisKebutuhan}', [JenisKebutuhanController::class, 'destroy'])->middleware('hak_akses:jenis_kebutuhan.manage');
 
     // Master jenis kebutuhan tambahan
     Route::get('/jenis-kebutuhan-tambahan', [JenisKebutuhanTambahanController::class, 'index'])->middleware('hak_akses:kebutuhan_tambahan.view')->name('jenis-kebutuhan-tambahan.index');
+    Route::get('/jenis-kebutuhan-tambahan/ekspor', [JenisKebutuhanTambahanController::class, 'ekspor'])->middleware('hak_akses:kebutuhan_tambahan.view')->name('jenis-kebutuhan-tambahan.ekspor');
     Route::post('/jenis-kebutuhan-tambahan', [JenisKebutuhanTambahanController::class, 'store'])->middleware('hak_akses:kebutuhan_tambahan.manage');
     Route::put('/jenis-kebutuhan-tambahan/{jenisKebutuhanTambahan}', [JenisKebutuhanTambahanController::class, 'update'])->middleware('hak_akses:kebutuhan_tambahan.manage');
     Route::delete('/jenis-kebutuhan-tambahan/{jenisKebutuhanTambahan}', [JenisKebutuhanTambahanController::class, 'destroy'])->middleware('hak_akses:kebutuhan_tambahan.manage');

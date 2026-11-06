@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\MasterExport;
 use App\Models\Skpd;
 use App\Models\Anggaran;
 use App\Models\Realisasi;
 use App\Traits\MencatatAudit;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -37,6 +40,20 @@ class SkpdController extends Controller
         return Inertia::render('Master/Index', array_merge($this->konfigurasi(), [
             'data' => Skpd::orderBy('kode')->paginate(20),
         ]));
+    }
+
+    public function ekspor(): BinaryFileResponse
+    {
+        $baris = Skpd::orderBy('kode')->get()->map(fn ($s) => [
+            $s->kode,
+            $s->nama,
+            $s->aktif ? 'Aktif' : 'Nonaktif',
+        ])->all();
+
+        return Excel::download(
+            new MasterExport('SKPD', ['Kode', 'Nama', 'Status'], $baris),
+            'master-skpd-'.now()->format('Y-m-d').'.xlsx'
+        );
     }
 
     public function store(Request $request)

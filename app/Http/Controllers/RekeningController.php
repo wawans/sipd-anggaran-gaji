@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\MasterExport;
 use App\Models\Rekening;
 use App\Models\Anggaran;
 use App\Models\Realisasi;
 use App\Models\MappingTemplateKolom;
 use App\Traits\MencatatAudit;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -44,6 +47,23 @@ class RekeningController extends Controller
             'data' => Rekening::with('induk:id,kode,nama')->orderBy('urutan')->orderBy('kode')->paginate(20),
             'semua_rekening' => Rekening::orderBy('kode')->get(['id', 'kode', 'nama', 'parent_rekening_id']),
         ]));
+    }
+
+    public function ekspor(): BinaryFileResponse
+    {
+        $baris = Rekening::with('induk:id,kode,nama')->orderBy('urutan')->orderBy('kode')->get()->map(fn ($r) => [
+            $r->kode,
+            $r->nama,
+            $r->induk ? $r->induk->kode : '-',
+            $r->tingkat,
+            $r->urutan ?? 0,
+            $r->aktif ? 'Aktif' : 'Nonaktif',
+        ])->all();
+
+        return Excel::download(
+            new MasterExport('Rekening', ['Kode', 'Nama', 'Kode Induk', 'Tingkat', 'Urutan', 'Status'], $baris),
+            'master-rekening-'.now()->format('Y-m-d').'.xlsx'
+        );
     }
 
     public function store(Request $request)
