@@ -86,7 +86,7 @@ export default function Index({ data, bisa_buat }) {
                         <tbody>
                             {data.data.map((t) => (
                                 <tr key={t.id} className="border-t hover:bg-slate-50">
-                                    <td className="py-2 pr-4">{t.tahun}</td>
+                                    <td className="py-2 pr-4 tabular-nums">{t.tahun}</td>
                                     <td className="py-2 pr-4">
                                         <Link href={`/tahap/${t.id}`} className="text-blue-600 hover:underline font-medium">
                                             {t.nama}
@@ -96,8 +96,8 @@ export default function Index({ data, bisa_buat }) {
                                         {tanggal(t.tgl_mulai)} s/d {tanggal(t.tgl_selesai)}
                                     </td>
                                     <td className="py-2 pr-4">{lencanaStatus(t.status)}</td>
-                                    <td className="py-2 pr-4 text-right">{t.jml_baris}</td>
-                                    <td className="py-2 pr-4 text-right">{rupiah(t.total_anggaran)}</td>
+                                    <td className="py-2 pr-4 text-right tabular-nums">{t.jml_baris}</td>
+                                    <td className="py-2 pr-4 text-right tabular-nums">{rupiah(t.total_anggaran)}</td>
                                 </tr>
                             ))}
                             {data.data.length === 0 && <SelKosong colspan={6} teks="Belum ada tahap. Buat tahap untuk tahun berjalan (N) dan tahun berikutnya (N+1)." />}

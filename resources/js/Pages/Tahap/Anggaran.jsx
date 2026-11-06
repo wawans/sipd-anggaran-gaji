@@ -30,7 +30,7 @@ export default function Anggaran({ tahap, ringkasan_skpd, total_tahap, bisa_ubah
                     className="border rounded px-3 py-2 text-sm w-64"
                 />
                 <div className="text-sm">
-                    Total tahap: <span className="font-bold text-lg">{rupiah(total_tahap)}</span>
+                    Total tahap: <span className="font-bold text-lg tabular-nums">{rupiah(total_tahap)}</span>
                 </div>
             </div>
 
@@ -59,7 +59,7 @@ export default function Anggaran({ tahap, ringkasan_skpd, total_tahap, bisa_ubah
                                                 <span className="text-xs text-slate-500 ml-2">({s.jml_baris} baris)</span>
                                             )}
                                         </td>
-                                        <td className="py-2 pr-3 text-right font-semibold">{rupiah(s.total_pagu)}</td>
+                                        <td className="py-2 pr-3 text-right font-semibold tabular-nums">{rupiah(s.total_pagu)}</td>
                                         {bisa_ubah && (
                                             <td className="py-2 whitespace-nowrap">
                                                 <Link
@@ -88,14 +88,14 @@ export default function Anggaran({ tahap, ringkasan_skpd, total_tahap, bisa_ubah
                                                         <tbody>
                                                             {s.rincian.map((r) => (
                                                                 <tr key={r.id} className={`border-t ${r.volume_nol ? 'bg-yellow-50' : ''}`}>
-                                                                    <td className="py-1 pr-3">{r.rekening_kode}</td>
+                                                                    <td className="py-1 pr-3 tabular-nums">{r.rekening_kode}</td>
                                                                     <td className="py-1 pr-3">{r.rekening_nama}</td>
-                                                                    <td className="py-1 pr-3 text-right">{rupiah(r.nilai)}</td>
-                                                                    <td className="py-1 pr-3 text-right">
+                                                                    <td className="py-1 pr-3 text-right tabular-nums">{rupiah(r.nilai)}</td>
+                                                                    <td className="py-1 pr-3 text-right tabular-nums">
                                                                         {r.volume}
                                                                         {r.volume_nol && <Lencana tipe="kuning">vol 0</Lencana>}
                                                                     </td>
-                                                                    <td className="py-1 pr-3 text-right font-medium">{rupiah(r.total_pagu)}</td>
+                                                                    <td className="py-1 pr-3 text-right font-medium tabular-nums">{rupiah(r.total_pagu)}</td>
                                                                 </tr>
                                                             ))}
                                                         </tbody>

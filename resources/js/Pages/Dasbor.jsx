@@ -15,7 +15,7 @@ export default function Dasbor({ ringkas, tahap_terbaru, audit_terbaru }) {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {stat.map((s) => (
                     <Kartu key={s.label}>
-                        <div className="text-3xl font-bold">{s.nilai}</div>
+                        <div className="text-3xl font-bold tabular-nums">{s.nilai}</div>
                         <div className="text-sm text-slate-500">{s.label}</div>
                     </Kartu>
                 ))}

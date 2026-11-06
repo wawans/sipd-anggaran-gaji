@@ -18,11 +18,11 @@ function TabelSelisih({ judul, baris }) {
                     <tbody>
                         {baris.map((r, i) => (
                             <tr key={i} className="border-t hover:bg-slate-50">
-                                <td className="py-2 pr-4">{r.kode}</td>
+                                <td className="py-2 pr-4 tabular-nums">{r.kode}</td>
                                 <td className="py-2 pr-4">{r.nama}</td>
-                                <td className="py-2 pr-4 text-right">{rupiah(r.total_anggaran)}</td>
-                                <td className="py-2 pr-4 text-right">{rupiah(r.total_realisasi)}</td>
-                                <td className={`py-2 pr-4 text-right font-medium ${r.selisih < 0 ? 'text-red-600' : ''}`}>
+                                <td className="py-2 pr-4 text-right tabular-nums">{rupiah(r.total_anggaran)}</td>
+                                <td className="py-2 pr-4 text-right tabular-nums">{rupiah(r.total_realisasi)}</td>
+                                <td className={`py-2 pr-4 text-right font-medium tabular-nums ${r.selisih < 0 ? 'text-red-600' : ''}`}>
                                     {rupiah(r.selisih)}
                                 </td>
                             </tr>
@@ -84,15 +84,15 @@ export default function Index({ daftar_tahap, tahap_aktif, laporan }) {
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <Kartu>
-                            <div className="text-2xl font-bold">{rupiah(laporan.ringkas.total_anggaran)}</div>
+                            <div className="text-2xl font-bold tabular-nums">{rupiah(laporan.ringkas.total_anggaran)}</div>
                             <div className="text-sm text-slate-500">Total anggaran (Σ total pagu)</div>
                         </Kartu>
                         <Kartu>
-                            <div className="text-2xl font-bold">{rupiah(laporan.ringkas.total_realisasi)}</div>
+                            <div className="text-2xl font-bold tabular-nums">{rupiah(laporan.ringkas.total_realisasi)}</div>
                             <div className="text-sm text-slate-500">Total realisasi</div>
                         </Kartu>
                         <Kartu>
-                            <div className={`text-2xl font-bold ${laporan.ringkas.selisih < 0 ? 'text-red-600' : ''}`}>
+                            <div className={`text-2xl font-bold tabular-nums ${laporan.ringkas.selisih < 0 ? 'text-red-600' : ''}`}>
                                 {rupiah(laporan.ringkas.selisih)}
                             </div>
                             <div className="text-sm text-slate-500">Selisih (anggaran − realisasi)</div>

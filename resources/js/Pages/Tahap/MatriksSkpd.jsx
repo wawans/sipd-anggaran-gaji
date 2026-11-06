@@ -209,7 +209,7 @@ export default function MatriksSkpd({ tahap, skpd, baris, total_skpd, rekening, 
                     className="border rounded px-3 py-2 text-sm w-64"
                 />
                 <div className="text-sm">
-                    Total SKPD: <span className="font-bold text-lg">{rupiah(total_skpd)}</span>
+                    Total SKPD: <span className="font-bold text-lg tabular-nums">{rupiah(total_skpd)}</span>
                 </div>
                 {bisa_ubah && !tambah && <Tombol onClick={() => setTambah(true)}>Tambah Baris</Tombol>}
             </div>
@@ -242,20 +242,20 @@ export default function MatriksSkpd({ tahap, skpd, baris, total_skpd, rekening, 
                                 <Fragment key={b.id}>
                                     <tr className={`border-t hover:bg-slate-50 ${b.volume_nol ? 'bg-yellow-50' : ''}`}>
                                         <td className="py-2 pr-3">
-                                            <div className="font-medium">{b.rekening_kode}</div>
+                                            <div className="font-medium tabular-nums">{b.rekening_kode}</div>
                                             <div className="text-xs text-slate-500">{b.rekening_nama}</div>
                                         </td>
-                                        <td className="py-2 pr-3 text-right">{rupiah(b.nilai)}</td>
-                                        <td className="py-2 pr-3 text-right">
+                                        <td className="py-2 pr-3 text-right tabular-nums">{rupiah(b.nilai)}</td>
+                                        <td className="py-2 pr-3 text-right tabular-nums">
                                             {b.volume}
                                             {b.volume_nol && <Lencana tipe="kuning">vol 0</Lencana>}
                                         </td>
-                                        <td className="py-2 pr-3 text-right">{rupiah(b.kebutuhan_bulan)}</td>
-                                        <td className="py-2 pr-3 text-right">{rupiah(b.total_kebutuhan)}</td>
-                                        <td className="py-2 pr-3 text-right">{rupiah(b.total_kebutuhan_tambahan)}</td>
-                                        <td className="py-2 pr-3 text-right">{rupiah(b.subtotal)}</td>
-                                        <td className="py-2 pr-3 text-right">{b.acress_type === 'persen' ? `${b.acress}%` : rupiah(b.acress)}</td>
-                                        <td className="py-2 pr-3 text-right font-semibold">{rupiah(b.total_pagu)}</td>
+                                        <td className="py-2 pr-3 text-right tabular-nums">{rupiah(b.kebutuhan_bulan)}</td>
+                                        <td className="py-2 pr-3 text-right tabular-nums">{rupiah(b.total_kebutuhan)}</td>
+                                        <td className="py-2 pr-3 text-right tabular-nums">{rupiah(b.total_kebutuhan_tambahan)}</td>
+                                        <td className="py-2 pr-3 text-right tabular-nums">{rupiah(b.subtotal)}</td>
+                                        <td className="py-2 pr-3 text-right tabular-nums">{b.acress_type === 'persen' ? `${b.acress}%` : rupiah(b.acress)}</td>
+                                        <td className="py-2 pr-3 text-right font-semibold tabular-nums">{rupiah(b.total_pagu)}</td>
                                         {bisa_ubah && (
                                             <td className="py-2 whitespace-nowrap">
                                                 <button onClick={() => setUbahId(ubahId === b.id ? null : b.id)} className="text-blue-600 hover:underline text-sm mr-2">

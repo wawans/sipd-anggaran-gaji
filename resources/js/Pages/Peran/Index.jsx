@@ -20,8 +20,8 @@ export default function Index({ data }) {
                             {data.map((p) => (
                                 <tr key={p.id} className="border-t hover:bg-slate-50">
                                     <td className="py-2 pr-4 font-medium">{p.nama}</td>
-                                    <td className="py-2 pr-4 text-right">{p.jml_hak}</td>
-                                    <td className="py-2 pr-4 text-right">{p.jml_pengguna}</td>
+                                    <td className="py-2 pr-4 text-right tabular-nums">{p.jml_hak}</td>
+                                    <td className="py-2 pr-4 text-right tabular-nums">{p.jml_pengguna}</td>
                                     <td className="py-2">
                                         {p.nama === 'Superadmin' ? (
                                             <span className="text-xs text-slate-400">Selalu semua hak akses</span>

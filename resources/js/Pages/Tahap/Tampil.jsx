@@ -116,8 +116,8 @@ export default function Tampil({ tahap, total_anggaran, jml_baris, tahap_lain, b
                         <dl className="text-sm space-y-2">
                             <div className="flex"><dt className="w-32 text-slate-500">Rentang</dt><dd>{tanggal(tahap.tgl_mulai)} s/d {tanggal(tahap.tgl_selesai)}</dd></div>
                             <div className="flex"><dt className="w-32 text-slate-500">Status</dt><dd>{lencanaStatus(tahap.status)}</dd></div>
-                            <div className="flex"><dt className="w-32 text-slate-500">Baris anggaran</dt><dd>{jml_baris}</dd></div>
-                            <div className="flex"><dt className="w-32 text-slate-500">Total anggaran</dt><dd className="font-semibold">{rupiah(total_anggaran)}</dd></div>
+                            <div className="flex"><dt className="w-32 text-slate-500">Baris anggaran</dt><dd className="tabular-nums">{jml_baris}</dd></div>
+                            <div className="flex"><dt className="w-32 text-slate-500">Total anggaran</dt><dd className="font-semibold tabular-nums">{rupiah(total_anggaran)}</dd></div>
                             {tahap.catatan && <div className="flex"><dt className="w-32 text-slate-500">Catatan</dt><dd>{tahap.catatan}</dd></div>}
                         </dl>
                     )}

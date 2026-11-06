@@ -59,7 +59,7 @@ export default function Index({ data }) {
                                 <tr key={t.id} className="border-t hover:bg-slate-50">
                                     <td className="py-2 pr-4 font-medium">{t.nama}</td>
                                     <td className="py-2 pr-4">{t.kolom_skpd}</td>
-                                    <td className="py-2 pr-4 text-right">{t.kolom_count}</td>
+                                    <td className="py-2 pr-4 text-right tabular-nums">{t.kolom_count}</td>
                                     {bisaKelola && (
                                         <td className="py-2">
                                             <Link href={`/mapping-template/${t.id}`} className="text-blue-600 hover:underline text-sm">

@@ -118,13 +118,13 @@ export default function ImporPratampil({ tahap, token, berkas, header, jml_baris
                         <tbody>
                             {hasil.map((h, i) => (
                                 <tr key={i} className={`border-t ${h.status === 'lewati' ? 'bg-red-50' : ''}`}>
-                                    <td className="py-1 pr-3">{h.no}</td>
-                                    <td className="py-1 pr-3">{h.kode_skpd || <span className="text-slate-300">—</span>}</td>
-                                    <td className="py-1 pr-3">{h.kode_rekening || <span className="text-slate-300">—</span>}</td>
+                                    <td className="py-1 pr-3 tabular-nums">{h.no}</td>
+                                    <td className="py-1 pr-3 tabular-nums">{h.kode_skpd || <span className="text-slate-300">—</span>}</td>
+                                    <td className="py-1 pr-3 tabular-nums">{h.kode_rekening || <span className="text-slate-300">—</span>}</td>
                                     <td className="py-1 pr-3">{badgeStatus(h.status)}</td>
-                                    <td className="py-1 pr-3 text-right">{h.nilai === null ? <span className="text-slate-300">—</span> : rupiah(h.nilai)}</td>
-                                    <td className="py-1 pr-3 text-right">{tampilAngka(h.volume)}</td>
-                                    <td className="py-1 pr-3 text-right">
+                                    <td className="py-1 pr-3 text-right tabular-nums">{h.nilai === null ? <span className="text-slate-300">—</span> : rupiah(h.nilai)}</td>
+                                    <td className="py-1 pr-3 text-right tabular-nums">{tampilAngka(h.volume)}</td>
+                                    <td className="py-1 pr-3 text-right tabular-nums">
                                         {h.nilai_acress === null && h.tipe_acress === null
                                             ? <span className="text-slate-300">—</span>
                                             : `${h.tipe_acress === 'persen' ? '%' : 'Rp'} ${h.nilai_acress ?? 0}`}

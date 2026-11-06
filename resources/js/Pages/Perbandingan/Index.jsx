@@ -60,9 +60,9 @@ export default function Index({ daftar_tahap, dipilih, hasil }) {
                                     {hasil.tahap.map((t) => (
                                         <tr key={t.id} className="border-t">
                                             <td className="py-2 pr-4 font-medium">{t.label}</td>
-                                            <td className="py-2 pr-4 text-right">{rupiah(t.total_anggaran)}</td>
-                                            <td className="py-2 pr-4 text-right">{rupiah(t.total_realisasi)}</td>
-                                            <td className={`py-2 pr-4 text-right ${t.selisih < 0 ? 'text-red-600' : ''}`}>
+                                            <td className="py-2 pr-4 text-right tabular-nums">{rupiah(t.total_anggaran)}</td>
+                                            <td className="py-2 pr-4 text-right tabular-nums">{rupiah(t.total_realisasi)}</td>
+                                            <td className={`py-2 pr-4 text-right tabular-nums ${t.selisih < 0 ? 'text-red-600' : ''}`}>
                                                 {rupiah(t.selisih)}
                                             </td>
                                         </tr>
@@ -91,7 +91,7 @@ export default function Index({ daftar_tahap, dipilih, hasil }) {
                                                 <span className="text-slate-500 text-xs">{r.nama}</span>
                                             </td>
                                             {hasil.tahap.map((t) => (
-                                                <td key={t.id} className="py-2 pr-4 text-right">
+                                                <td key={t.id} className="py-2 pr-4 text-right tabular-nums">
                                                     {r.nilai[t.id] ? rupiah(r.nilai[t.id]) : <span className="text-slate-300">-</span>}
                                                 </td>
                                             ))}

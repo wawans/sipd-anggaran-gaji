@@ -159,7 +159,7 @@ export default function Index({ judul, rute, kolom, field, data, semua_rekening 
                             {data.data.map((baris) => (
                                 <tr key={baris.id} className="border-t hover:bg-slate-50">
                                     {kolom.map((k) => (
-                                        <td key={k.kunci} className="py-2 pr-4">{nilaiSel(baris, k)}</td>
+                                        <td key={k.kunci} className={`py-2 pr-4 ${k.kunci === 'kode' ? 'tabular-nums' : ''}`}>{nilaiSel(baris, k)}</td>
                                     ))}
                                     {bisaKelola && (
                                         <td className="py-2">

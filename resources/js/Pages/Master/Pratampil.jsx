@@ -51,7 +51,7 @@ export default function Pratampil({ jenis, judul, token, berkas, header, contoh,
             <Kartu judul="Berkas">
                 <dl className="text-sm space-y-2">
                     <div className="flex"><dt className="w-40 text-slate-500">Nama berkas</dt><dd>{berkas}</dd></div>
-                    <div className="flex"><dt className="w-40 text-slate-500">Jumlah baris data</dt><dd className="font-semibold">{jml_baris}</dd></div>
+                    <div className="flex"><dt className="w-40 text-slate-500">Jumlah baris data</dt><dd className="font-semibold tabular-nums">{jml_baris}</dd></div>
                     <div className="flex"><dt className="w-40 text-slate-500">Kolom terdeteksi</dt><dd>{header.join(', ')}</dd></div>
                 </dl>
             </Kartu>

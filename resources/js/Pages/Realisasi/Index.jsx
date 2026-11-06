@@ -63,7 +63,7 @@ export default function Index({ data, daftar_periode, daftar_skpd, filter }) {
                                     <td className="py-2 pr-4">{r.periode}</td>
                                     <td className="py-2 pr-4">{r.skpd.kode} - {r.skpd.nama}</td>
                                     <td className="py-2 pr-4">{r.rekening.kode} - {r.rekening.nama}</td>
-                                    <td className="py-2 pr-4 text-right">{rupiah(r.jumlah)}</td>
+                                    <td className="py-2 pr-4 text-right tabular-nums">{rupiah(r.jumlah)}</td>
                                     <td className="py-2 pr-4 text-xs text-slate-500">
                                         {r.pengimpor?.nama || '-'} · {tanggal(r.diimpor_pada)}
                                     </td>

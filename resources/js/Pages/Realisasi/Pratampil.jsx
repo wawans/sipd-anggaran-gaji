@@ -66,8 +66,8 @@ export default function Pratampil({ token, periode, mode, template, berkas, jml_
                             {contoh.map((c) => (
                                 <tr key={c.skpd_id} className="border-t">
                                     <td className="py-2 pr-4">{c.skpd_kode} - {c.skpd_nama}</td>
-                                    <td className="py-2 pr-4 text-right">{c.jml_rekening}</td>
-                                    <td className="py-2 pr-4 text-right">{rupiah(c.total)}</td>
+                                    <td className="py-2 pr-4 text-right tabular-nums">{c.jml_rekening}</td>
+                                    <td className="py-2 pr-4 text-right tabular-nums">{rupiah(c.total)}</td>
                                 </tr>
                             ))}
                         </tbody>
